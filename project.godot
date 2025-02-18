@@ -14,9 +14,3 @@ config/name="Tainted Dunes"
 run/main_scene="res://not_kansas.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
-
-[display]
-
-window/size/viewport_width=1920
-window/size/viewport_height=1080
-window/size/mode=2

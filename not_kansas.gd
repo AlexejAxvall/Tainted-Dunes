@@ -41,7 +41,7 @@ func _ready():
 	initialize_grid()
 	initialize_unit()
 	
-	while hand.hand_size < hand.max_hand_size - 3:
+	while hand.hand_size < 1:
 		hand.draw_card(deck)
 	
 	

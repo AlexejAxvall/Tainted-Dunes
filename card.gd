@@ -21,6 +21,8 @@ func _ready():
 	label.size.x = texture_rect_size.x * 0.91666666666
 	label.size.y = texture_rect_size.y * 0.15625
 	label.text = card_dictionary["Name"]
+	pivot_offset.x = texture_rect_size.x / 2
+	pivot_offset.y = texture_rect_size.y
 
 func _input(event):
 	if is_playable and event is InputEventMouseButton and event.pressed:
