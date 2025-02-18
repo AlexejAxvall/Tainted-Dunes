@@ -14,26 +14,38 @@ var angle_step: float #deg
 var index_centre
 var hand_offset
 var card_positions = []
-@export var hand_radius: float = 100
+@export var hand_radius: float = 1
 
 func _ready():
 	if max_hand_size % 2 == 0:
 		angle_step = 2.0 * max_card_rotation / max_hand_size
+		print("Angle step: " + str(angle_step))
+		print("Angle step * max hand size: " + str(angle_step * max_hand_size))
 		for i in range(max_hand_size + 1):
 			card_rotations.append(-max_card_rotation + angle_step * i)
 		index_centre = max_hand_size / 2
+		for i in range(max_hand_size + 1):
+			#card_positions.append(Vector2(0, 0))
+			card_positions.append(Vector2(hand_radius * cos(deg_to_rad(120 - angle_step * i)), -hand_radius * sin(deg_to_rad(120 - angle_step * i))))
+			print("angle: " + str(120 - angle_step * i))
+	
 	else:
-		print(max_card_rotation / max_hand_size)
+		print("Max card rotation / max hand size: " + str(max_card_rotation / max_hand_size))
 		angle_step = max_card_rotation / (max_hand_size / 2)
 		for i in range(max_hand_size):
 			card_rotations.append(-max_card_rotation + angle_step * i)
+		
+		for i in range(max_hand_size):
+			#card_positions.append(Vector2(0, 0))
+			card_positions.append(Vector2(hand_radius * cos(deg_to_rad(120 - angle_step * i)), -hand_radius * sin(deg_to_rad(120 - angle_step * i))))
+	
 		index_centre = max_hand_size / 2 + 1
 	print("Angle step: " + str(angle_step))
+	print("Card rotations: " + str(card_rotations))
+	print("Card positions: " + str(card_positions))
+
 	
-	for i in range(max_hand_size):
-		card_positions.append(Vector2())
 	
-	print(card_rotations)
 	#while self.get_parent() != null:
 		#highest_parent = self.get_parent()
 
@@ -62,7 +74,8 @@ func arrange_cards():
 	print("Hand size: " + str(hand_size))
 	var calibrator = 0
 	for i in range(hand_size):
-		hand_of_cards[i].position = Vector2(i * deck.card_dimensions.x * deck.card_scale.x, 0)
+		hand_of_cards[i].position = card_positions[i]
+		#hand_of_cards[i].position = Vector2(192 * i, -hand_radius)
 		if hand_of_cards[i]:
 			if hand_size % 2 == 0:
 				if i == hand_offset - 1:

@@ -81,7 +81,8 @@ func _input(event):
 
 func update_hand_position(hand_size: int):
 	var viewport_size = get_viewport_rect().size
-	hand.position = Vector2(viewport_size.x / 2 - deck.card_dimensions.x / 2 * deck.card_scale.x * hand_size, viewport_size.y - deck.card_dimensions.y * deck.card_scale.y)
+	hand.position = Vector2(viewport_size.x / 2, viewport_size.y + hand.hand_radius)
+	#hand.position = Vector2(viewport_size.x / 2, viewport_size.y - deck.card_dimensions.y * deck.card_scale.y)
 	#deck.position = Vector2(100, viewport_size.y - 100)
 
 func initialize_image_folder():
