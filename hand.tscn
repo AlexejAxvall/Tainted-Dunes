@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://dhvtwo8vih6ou"]
+
+[ext_resource type="Script" path="res://hand.gd" id="1_sr8c3"]
+
+[node name="Hand" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_sr8c3")

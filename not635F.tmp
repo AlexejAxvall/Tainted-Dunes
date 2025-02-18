@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://de2k8ugckcvio"]
+
+[ext_resource type="Script" path="res://not_kansas.gd" id="1_3c5gl"]
+
+[node name="Not_Kansas" type="Node2D"]
+texture_filter = 1
+script = ExtResource("1_3c5gl")
+grid_radius = null
+
+[node name="Camera2D" type="Camera2D" parent="."]

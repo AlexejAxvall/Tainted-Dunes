@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://cu2po50sj7b6q"]
+
+[ext_resource type="Script" path="res://deck.gd" id="1_yyhq1"]
+
+[node name="Deck" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_yyhq1")
