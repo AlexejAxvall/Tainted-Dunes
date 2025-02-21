@@ -6,6 +6,7 @@ var parent
 @onready var area2D = $Area2D
 @onready var sprite2D_1 = $Sprite2D
 @onready var sprite2D_2 = $Sprite2D2
+@onready var sprite2D_3 = $Sprite2D3
 
 @export var tile_side_length = 50
 
@@ -65,3 +66,6 @@ func update_image(image_name : Texture2D, image_scale : Vector2, image_self_modu
 func update_background_image(image_name : Texture2D, image_scale : Vector2):
 	sprite2D_2.texture = image_name
 	sprite2D_2.scale = image_scale
+
+func update_fog(image_name : Texture2D, image_scale : Vector2):
+	sprite2D_3.texture = image_name

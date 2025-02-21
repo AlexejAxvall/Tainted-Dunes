@@ -8,7 +8,7 @@ extends Node2D
 @onready var deck = $CanvasLayer/Deck
 @onready var hand = $CanvasLayer/Hand
 
-@export var grid_radius = 2
+@export var grid_radius = 15
 
 var viewport_visible_rect
 var viewport_size
@@ -71,10 +71,10 @@ func _input(event):
 	
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-			camera.zoom *= Vector2(0.9, 0.9)
+			camera.zoom *= Vector2(1.1, 1.1)
 
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-			camera.zoom *= Vector2(1.1, 1.1)
+			camera.zoom *= Vector2(0.9, 0.9)
 	
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
 		camera.position -= event.relative / camera.zoom
