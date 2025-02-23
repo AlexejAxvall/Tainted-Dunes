@@ -8,7 +8,7 @@ extends Node2D
 @onready var deck = $CanvasLayer/Deck
 @onready var hand = $CanvasLayer/Hand
 
-@export var grid_radius = 15
+@export var grid_radius = 5
 
 var viewport_visible_rect
 var viewport_size
@@ -26,6 +26,7 @@ var old_selected_node
 
 var image_dictionary = {}
 var image_scale
+var image_modulate
 
 var unit_clicked = false
 var tile_clicked = false
@@ -133,9 +134,10 @@ func initialize_grid():
 			tile.position = tile_position_initial + offset
 			add_child(tile)
 			
+			var tile_position = tile.position
 			var type = tile_types[randi_range(0, 1)]
 			var image
-			var image_self_modulate
+			var in_sight = false
 			var height
 			var passable_ground = false
 			var passable_water = false
@@ -147,7 +149,7 @@ func initialize_grid():
 			
 			if type == "plain":
 				image = image_dictionary[type]
-				image_self_modulate = Color(1, 0.5, 0)
+				image_modulate = Color(1, 0.5, 0)
 				image_scale = Vector2(2 * tile_radius / 360, 2 * tile_radius / 360)
 				height = 0
 				passable_ground = true
@@ -167,7 +169,7 @@ func initialize_grid():
 				defence_bonus = 1
 			elif type == "mountain":
 				image = image_dictionary[type]
-				image_self_modulate = Color(0.5, 0.5, 0.5)
+				image_modulate = Color(0.5, 0.5, 0.5)
 				image_scale = Vector2(2 * tile_radius / 360, 2 * tile_radius / 360)
 				passable_ground = false
 				passable_water = false
@@ -186,7 +188,7 @@ func initialize_grid():
 				range_bonus = null
 				defence_bonus = null
 			
-			tile.update_image(image, image_scale, image_self_modulate)
+			tile.update_image(1, image, image_scale, image_modulate)
 			
 			
 			var background_image = image_dictionary["green"]
@@ -195,23 +197,31 @@ func initialize_grid():
 			
 			var tile_key = "Tile_" + str(tile_number)
 			tile_dictionary[tile_key] = {
+				"Node": tile,
 				"ID": tile_number,
 				"Coordinates": [j, i],
+				"Position": tile_position,
 				"Type": type,
 				"Image": image,
+				"Image_scale": image_scale,
+				"Image_modulate": image_modulate,
+				"In_sight": false,
 				"Height": height,
 				"Passable" : {"Ground" : false, "Water" : false, "Air" : false},
 				"Movement_cost": movement_cost,
 				"Range_bonus": range_bonus,
 				"Defence_bonus": defence_bonus,
 				"Hide": false,
-				"Neighbour_1": {"ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_2": {"ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_3": {"ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_4": {"ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_5": {"ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_6": {"ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_1": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_2": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_3": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_4": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_5": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_6": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
 			}
+			
+			if not in_sight:
+				tile.update_image(1, image_dictionary["fog"], image_scale, null)
 			
 			tile_matrix[i].append(tile_key)
 			
@@ -229,6 +239,8 @@ func initialize_grid():
 		
 		offset.y += tile_side_length / 2 + tile_side_length
 		count = 0
+	
+	
 	
 	# Assign neighbors with safe index checking.
 	# For each tile, we check:
@@ -256,8 +268,10 @@ func initialize_grid():
 					#print("Neighbour_" + str(neighbor_count) + " Relative Y = " + str(ny))
 					#print("Neighbour_" + str(neighbor_count) + " Relative X = " + str(nx))
 					
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Node"] = tile_dictionary[neighbor_tile_key]["Node"]
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["ID"] = tile_dictionary[neighbor_tile_key]["ID"]
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Type"] = tile_dictionary[neighbor_tile_key]["Type"]
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Image"] = tile_dictionary[neighbor_tile_key]["Image"]
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Movement_cost"] = tile_dictionary[neighbor_tile_key]["Movement_cost"]
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Passable"] = tile_dictionary[neighbor_tile_key]["Passable"]
 					
@@ -266,8 +280,8 @@ func initialize_grid():
 						break
 				if neighbor_count > 6:
 					break
-			
-			#print(tile_dictionary["Tile_" + str(tile_number)])
+	
+			print(tile_dictionary["Tile_" + str(tile_number)])
 
 func initialize_unit():
 	var unit = unit_scene.instantiate()
@@ -277,8 +291,21 @@ func initialize_unit():
 	unit.set_radius(tile_radius)
 	unit.update_image(tile_radius)
 
-
 func _on_button_pressed():
 	print("Pressed!")
 	hand.draw_card(deck)
 	update_hand_position(hand.hand_size)
+
+func update_fog(add_or_remove, tile_key):
+	if add_or_remove == "add":
+		for i in range(6):
+			print("Tile key: " + str(tile_key))
+			var node = tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Node"]
+			if node!= null:
+				node.update_image(1, image_dictionary["fog"], image_scale, null)
+	elif add_or_remove == "remove":
+		for i in range(6):
+			print("Tile key: " + str(tile_key))
+			var node = tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Node"]
+			if node != null:
+				node.update_image(1, tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Image"], image_scale, null)

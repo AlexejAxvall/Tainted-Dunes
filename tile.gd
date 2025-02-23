@@ -6,7 +6,6 @@ var parent
 @onready var area2D = $Area2D
 @onready var sprite2D_1 = $Sprite2D
 @onready var sprite2D_2 = $Sprite2D2
-@onready var sprite2D_3 = $Sprite2D3
 
 @export var tile_side_length = 50
 
@@ -33,16 +32,6 @@ func calculate_hexagon(tile_side_length):
 		vertices.append(Vector2(x, y))
 	return vertices
 
-
-func _on_area_2d_body_entered(body):
-	if body.has_group("Unit"):
-		contains_unit = true
-		print("Tile " + str(id) + " contains a unit: " + str(body))
-
-func _on_area_2d_body_exited(body):
-	if body.has_group("Unit"):
-		contains_unit = false
-
 func _on_area2d_input_event(viewport, event, shape_idx):
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			parent.tile_clicked = true
@@ -58,14 +47,30 @@ func _on_area2d_input_event(viewport, event, shape_idx):
 					if parent.old_selected_node.is_in_group("Unit"):
 						parent.old_selected_node.position = parent.selected_node.position
 
-func update_image(image_name : Texture2D, image_scale : Vector2, image_self_modulate : Color):
-	sprite2D_1.texture = image_name
-	sprite2D_1.self_modulate = image_self_modulate
-	sprite2D_1.scale = image_scale
+func update_image(sprite_id : int, image_name : Texture2D, image_scale : Vector2, image_modulate):
+	if sprite_id == 1:
+		sprite2D_1.texture = image_name
+		if image_modulate != null:
+			sprite2D_1.self_modulate = image_modulate
+		else:
+			sprite2D_1.self_modulate = Color(1, 1, 1, 1)
+		sprite2D_1.scale = image_scale
+	elif sprite_id == 2:
+		sprite2D_2.texture = image_name
+		sprite2D_2.scale = image_scale
 
-func update_background_image(image_name : Texture2D, image_scale : Vector2):
-	sprite2D_2.texture = image_name
-	sprite2D_2.scale = image_scale
+func _on_area_2d_area_entered(area):
+	if area.is_in_group("Unit"):
+		contains_unit = true
+		print("Tile " + str(id) + " contains a unit: " + str(area))
 
-func update_fog(image_name : Texture2D, image_scale : Vector2):
-	sprite2D_3.texture = image_name
+func _on_area_2d_area_shape_entered(area_rid, area, area_shape_index, local_shape_index):
+	if area.is_in_group("Unit"):
+		contains_unit = false
+
+func _on_area_2d_2_area_entered(area):
+	if area.is_in_group("Unit"):
+		parent.update_fog("remove", id)
+
+	#if area.has_group("Unit"):
+		#parent.update_fog("add", "Tile_" + id)
