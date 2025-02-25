@@ -19,18 +19,18 @@ var card_positions = []
 func _ready():
 	if max_hand_size % 2 == 0:
 		angle_step = 2.0 * max_card_rotation / max_hand_size
-		print("Angle step: " + str(angle_step))
-		print("Angle step * max hand size: " + str(angle_step * max_hand_size))
+		#print("Angle step: " + str(angle_step))
+		#print("Angle step * max hand size: " + str(angle_step * max_hand_size))
 		for i in range(max_hand_size + 1):
 			card_rotations.append(-max_card_rotation + angle_step * i)
 		index_centre = max_hand_size / 2
 		for i in range(max_hand_size + 1):
 			#card_positions.append(Vector2(0, 0))
 			card_positions.append(Vector2(hand_radius * cos(deg_to_rad(120 - angle_step * i)), -hand_radius * sin(deg_to_rad(120 - angle_step * i))))
-			print("angle: " + str(120 - angle_step * i))
+			#print("angle: " + str(120 - angle_step * i))
 	
 	else:
-		print("Max card rotation / max hand size: " + str(max_card_rotation / max_hand_size))
+		#print("Max card rotation / max hand size: " + str(max_card_rotation / max_hand_size))
 		angle_step = max_card_rotation / (max_hand_size / 2)
 		for i in range(max_hand_size):
 			card_rotations.append(-max_card_rotation + angle_step * i)
@@ -40,9 +40,9 @@ func _ready():
 			card_positions.append(Vector2(hand_radius * cos(deg_to_rad(120 - angle_step * i)), -hand_radius * sin(deg_to_rad(120 - angle_step * i))))
 	
 		index_centre = max_hand_size / 2 + 1
-	print("Angle step: " + str(angle_step))
-	print("Card rotations: " + str(card_rotations))
-	print("Card positions: " + str(card_positions))
+	#print("Angle step: " + str(angle_step))
+	#print("Card rotations: " + str(card_rotations))
+	#print("Card positions: " + str(card_positions))
 
 	
 	
@@ -63,15 +63,15 @@ func draw_card(deck):
 func arrange_cards():
 	if hand_size % 2 == 0:
 		hand_offset = hand_size / 2
-		print("Hand offset: " + str(hand_offset))
+		#print("Hand offset: " + str(hand_offset))
 	elif hand_size != 1:
 		hand_offset = hand_size / 2
-		print("Hand offset: " + str(hand_offset))
+		#print("Hand offset: " + str(hand_offset))
 	elif hand_size == 1:
 		hand_offset = 0
-		print("Hand offset: " + str(hand_offset))
+		#print("Hand offset: " + str(hand_offset))
 	
-	print("Hand size: " + str(hand_size))
+	#print("Hand size: " + str(hand_size))
 	var calibrator = 0
 	for i in range(hand_size):
 		hand_of_cards[i].position = card_positions[i]
@@ -79,25 +79,25 @@ func arrange_cards():
 		if hand_of_cards[i]:
 			if hand_size % 2 == 0:
 				if i == hand_offset - 1:
-					print("Index: 2")
-					print("Rotation deg: " + str(card_rotations[index_centre - 1]))
-					print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - 1])))
+					#print("Index: 2")
+					#print("Rotation deg: " + str(card_rotations[index_centre - 1]))
+					#print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - 1])))
 					card_rotation = deg_to_rad(card_rotations[index_centre - 1])
 				elif i == hand_offset:
-					print("Index: 4")
-					print("Rotation deg: " + str(card_rotations[index_centre + 1]))
-					print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre + 1])))
+					#print("Index: 4")
+					#print("Rotation deg: " + str(card_rotations[index_centre + 1]))
+					#print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre + 1])))
 					card_rotation = deg_to_rad(card_rotations[index_centre + 1])
 					calibrator = 1
 				else:
-					print("Index: " + str(index_centre - hand_offset + i + calibrator))
-					print("Rotation deg: " + str(card_rotations[index_centre - hand_offset + i + calibrator]))
-					print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - hand_offset + i + calibrator])))
+					#print("Index: " + str(index_centre - hand_offset + i + calibrator))
+					#print("Rotation deg: " + str(card_rotations[index_centre - hand_offset + i + calibrator]))
+					#print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - hand_offset + i + calibrator])))
 					card_rotation = deg_to_rad(card_rotations[index_centre - hand_offset + i + calibrator])	
 			else:
-				print("Index: " + str(index_centre - hand_offset + i - 1))
-				print("Rotation deg: " + str(card_rotations[index_centre - hand_offset + i - 1]))
-				print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - hand_offset + i - 1])))
+				#print("Index: " + str(index_centre - hand_offset + i - 1))
+				#print("Rotation deg: " + str(card_rotations[index_centre - hand_offset + i - 1]))
+				#print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - hand_offset + i - 1])))
 				card_rotation = deg_to_rad(card_rotations[index_centre - hand_offset + i])
 			hand_of_cards[i].rotation = card_rotation
 

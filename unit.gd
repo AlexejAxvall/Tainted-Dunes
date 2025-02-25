@@ -2,10 +2,11 @@ extends Node2D
 
 var parent
 
-@onready var collisio_shape_2D = $Area2D/CollisionShape2D
+@onready var collisio_polygon_2D = $Area2D/CollisionPolygon2D
 @onready var area2D = $Area2D
 @onready var sprite2D = $Sprite2D
 
+@export var tile_side_length = 50
 
 var team
 var type
@@ -29,6 +30,7 @@ var stats_dictionary = {
 
 func _ready():
 	area2D.connect("input_event", Callable(self, "_on_area2d_input_event"))
+	collisio_polygon_2D.polygon = calculate_hexagon(tile_side_length)
 	sprite2D.scale = Vector2()
 
 func deselect(event):
@@ -47,5 +49,11 @@ func _on_area2d_input_event(viewport, event, shape_idx):
 func update_image(tile_radius : float):
 	sprite2D.scale = Vector2(2 * tile_radius / 360, 2 * tile_radius / 360)
 
-func set_radius(radius : float):
-	collisio_shape_2D.shape.radius = radius
+func calculate_hexagon(tile_side_length):
+	var vertices = []
+	for i in range(6):
+		var angle = deg_to_rad(30 + 60 * i)
+		var x = tile_side_length * 0.9 * cos(angle)
+		var y = tile_side_length * 0.9 * sin(angle)
+		vertices.append(Vector2(x, y))
+	return vertices

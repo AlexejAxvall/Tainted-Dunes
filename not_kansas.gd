@@ -8,7 +8,7 @@ extends Node2D
 @onready var deck = $CanvasLayer/Deck
 @onready var hand = $CanvasLayer/Hand
 
-@export var grid_radius = 5
+@export var grid_radius = 2
 
 var viewport_visible_rect
 var viewport_size
@@ -99,13 +99,6 @@ func initialize_image_folder():
 				image_dictionary[key] = texture
 			file_name = dir.get_next()
 		dir.list_dir_end()
-
-func get_tile_key_at(row: int, col: int):
-	if row < 0 or row >= tile_matrix.size():
-		return null
-	if col < 0 or col >= tile_matrix[row].size():
-		return null
-	return tile_matrix[row][col]
 
 func initialize_grid():
 	tile_position_initial = viewport_visible_rect.size / 2
@@ -212,22 +205,23 @@ func initialize_grid():
 				"Range_bonus": range_bonus,
 				"Defence_bonus": defence_bonus,
 				"Hide": false,
-				"Neighbour_1": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_2": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_3": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_4": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_5": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
-				"Neighbour_6": {"Node": null, "ID": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_1": {"Node": null, "ID": null, "Coordinates": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_2": {"Node": null, "ID": null, "Coordinates": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_3": {"Node": null, "ID": null, "Coordinates": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_4": {"Node": null, "ID": null, "Coordinates": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_5": {"Node": null, "ID": null, "Coordinates": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
+				"Neighbour_6": {"Node": null, "ID": null, "Coordinates": null, "Movement_cost" : null, "Passable" : {"Ground" : false, "Water" : false, "Air" : false}},
 			}
 			
 			if not in_sight:
 				tile.update_image(1, image_dictionary["fog"], image_scale, null)
 			
 			tile_matrix[i].append(tile_key)
-			
 			tile_number += 1
 			offset.x += tile_radius * 2
 			count += 1
+		
+		print(tile_matrix[i])
 		
 		if i - grid_radius != 0 and (i - grid_radius) / abs(i - grid_radius) != 0:
 			if (i - grid_radius) / abs(i - grid_radius) < 0:
@@ -242,6 +236,7 @@ func initialize_grid():
 	
 	
 	
+	
 	# Assign neighbors with safe index checking.
 	# For each tile, we check:
 	#   - The row above (y - 1): 2 potential neighbor positions
@@ -251,44 +246,70 @@ func initialize_grid():
 	for y in range(tile_matrix.size()):
 		for x in range(tile_matrix[y].size()):
 			tile_number += 1
+			print()
+			print("Tile " + str(tile_number))
+			print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Coordinates"]))
+			print()
 			var current_tile_key = tile_matrix[y][x]
-			var neighbor_count = 1
+			var neighbour_count = 1
+			
 			for row in range(3):
 				var ny = y - 1 + row
 				var local_column_count = 3 if row == 1 else 2
 				for column in range(local_column_count):
-					var nx = x - 1 + column
+					var nx = x - 1 + column           
 					if ny == y and nx == x:
 						continue
-					var neighbor_tile_key = get_tile_key_at(ny, nx)
-					if neighbor_tile_key == null:
+					var neighbour_tile_key = get_tile_key_at(ny, nx)
+					if neighbour_tile_key == null:
+						print("Self Y = " + str(y))
+						print("Self X = " + str(x))
+						print("Neighbour tile key:" + str(neighbour_tile_key))
+						print("Neighbour " + str(neighbour_count) + ": ID: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["ID"]))
+						print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["Coordinates"]))
+						print("Neighbour_" + str(neighbour_count) + " Relative Y = " + str(ny - y))
+						print("Neighbour_" + str(neighbour_count) + " Relative X = " + str(nx - x))
+						print()
+						neighbour_count += 1
 						continue
-					#print("Self Y = " + str(y))
-					#print("Self X = " + str(x))
-					#print("Neighbour_" + str(neighbor_count) + " Relative Y = " + str(ny))
-					#print("Neighbour_" + str(neighbor_count) + " Relative X = " + str(nx))
 					
-					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Node"] = tile_dictionary[neighbor_tile_key]["Node"]
-					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["ID"] = tile_dictionary[neighbor_tile_key]["ID"]
-					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Type"] = tile_dictionary[neighbor_tile_key]["Type"]
-					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Image"] = tile_dictionary[neighbor_tile_key]["Image"]
-					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Movement_cost"] = tile_dictionary[neighbor_tile_key]["Movement_cost"]
-					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbor_count)]["Passable"] = tile_dictionary[neighbor_tile_key]["Passable"]
+					print("Self Y = " + str(y))
+					print("Self X = " + str(x))
+					print("Neighbour tile key:" + str(neighbour_tile_key))
+					print("Neighbour " + str(neighbour_count) + ": ID: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["ID"]))
+					print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["Coordinates"]))
+					print("Neighbour_" + str(neighbour_count) + " Relative Y = " + str(ny - y))
+					print("Neighbour_" + str(neighbour_count) + " Relative X = " + str(nx - x))
+					print()
 					
-					neighbor_count += 1
-					if neighbor_count > 6:
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Node"] = tile_dictionary[neighbour_tile_key]["Node"]
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["ID"] = tile_dictionary[neighbour_tile_key]["ID"]
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Coordinates"] = tile_dictionary[neighbour_tile_key]["Coordinates"]
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Type"] = tile_dictionary[neighbour_tile_key]["Type"]
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Image"] = tile_dictionary[neighbour_tile_key]["Image"]
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Movement_cost"] = tile_dictionary[neighbour_tile_key]["Movement_cost"]
+					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Passable"] = tile_dictionary[neighbour_tile_key]["Passable"]
+					
+					neighbour_count += 1
+					if neighbour_count > 6:
 						break
-				if neighbor_count > 6:
+				if neighbour_count > 6:
 					break
 	
-			print(tile_dictionary["Tile_" + str(tile_number)])
+			#print(tile_dictionary["Tile_" + str(tile_number)])
+
+func get_tile_key_at(row: int, col: int):
+	if row < 0 or row >= tile_matrix.size():
+		return null
+	if col < 0 or col >= tile_matrix[row].size():
+		return null
+	return tile_matrix[row][col]
 
 func initialize_unit():
 	var unit = unit_scene.instantiate()
 	unit.parent = self
 	add_child(unit)
 	unit.position = viewport_visible_rect.size / 2
-	unit.set_radius(tile_radius)
 	unit.update_image(tile_radius)
 
 func _on_button_pressed():
@@ -297,15 +318,16 @@ func _on_button_pressed():
 	update_hand_position(hand.hand_size)
 
 func update_fog(add_or_remove, tile_key):
+	print("Tile key: " + str(tile_key))
 	if add_or_remove == "add":
 		for i in range(6):
-			print("Tile key: " + str(tile_key))
 			var node = tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Node"]
+			print("Neighbour " + str(i + 1))
 			if node!= null:
 				node.update_image(1, image_dictionary["fog"], image_scale, null)
 	elif add_or_remove == "remove":
 		for i in range(6):
-			print("Tile key: " + str(tile_key))
 			var node = tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Node"]
+			print("Neighbour " + str(i + 1))
 			if node != null:
 				node.update_image(1, tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Image"], image_scale, null)
