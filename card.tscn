@@ -8,7 +8,6 @@
 z_index = 1
 layout_mode = 3
 anchors_preset = 0
-pivot_offset = Vector2(96, 0)
 script = ExtResource("1_m371b")
 
 [node name="TextureRect" type="TextureRect" parent="."]

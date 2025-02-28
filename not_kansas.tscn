@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://de2k8ugckcvio"]
+[gd_scene load_steps=5 format=3 uid="uid://de2k8ugckcvio"]
 
 [ext_resource type="Script" path="res://not_kansas.gd" id="1_3c5gl"]
 [ext_resource type="PackedScene" uid="uid://cu2po50sj7b6q" path="res://deck.tscn" id="2_3pdmd"]
+[ext_resource type="PackedScene" uid="uid://0hx2c1ddh4yb" path="res://card.tscn" id="2_nh4v5"]
 [ext_resource type="PackedScene" uid="uid://dhvtwo8vih6ou" path="res://hand.tscn" id="3_wsshh"]
 
 [node name="Not_Kansas" type="Node2D"]
@@ -14,11 +15,23 @@ script = ExtResource("1_3c5gl")
 
 [node name="Deck" parent="CanvasLayer" instance=ExtResource("2_3pdmd")]
 
+[node name="Card" parent="CanvasLayer/Deck" instance=ExtResource("2_nh4v5")]
+offset_left = -1218.0
+offset_right = -1218.0
+
 [node name="Hand" parent="CanvasLayer" instance=ExtResource("3_wsshh")]
 
 [node name="Button" type="Button" parent="CanvasLayer"]
 offset_right = 8.0
 offset_bottom = 8.0
 text = "Draw"
+
+[node name="Line2D" type="Line2D" parent="CanvasLayer"]
+
+[node name="Line2D2" type="Line2D" parent="CanvasLayer"]
+
+[node name="Line2D3" type="Line2D" parent="CanvasLayer"]
+
+[node name="Line2D4" type="Line2D" parent="CanvasLayer"]
 
 [connection signal="pressed" from="CanvasLayer/Button" to="." method="_on_button_pressed"]

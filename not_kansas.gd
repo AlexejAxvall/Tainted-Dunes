@@ -1,3 +1,5 @@
+#Main scene root node script
+
 extends Node2D
 
 @onready var tile_scene: PackedScene = preload("res://tile.tscn")
@@ -7,13 +9,18 @@ extends Node2D
 @onready var canvas_layer = $CanvasLayer
 @onready var deck = $CanvasLayer/Deck
 @onready var hand = $CanvasLayer/Hand
+@onready var line_2D = $CanvasLayer/Line2D
+@onready var line_2D2 = $CanvasLayer/Line2D2
+@onready var line_2D3 = $CanvasLayer/Line2D3
+@onready var line_2D4 = $CanvasLayer/Line2D4
 
-@export var grid_radius = 2
+@export var grid_radius = 5
 
 var viewport_visible_rect
 var viewport_size
 var camera_viewport_size
 
+var hand_position
 
 var tile_position_initial: Vector2
 var tile_side_length
@@ -32,9 +39,18 @@ var unit_clicked = false
 var tile_clicked = false
 var click_blocked = false
 
+var middle_row
+
+var secant_global_position
+
 func _ready():
+	middle_row = grid_radius
+	
 	viewport_visible_rect = get_viewport().get_visible_rect()
 	viewport_size = get_viewport_rect().size
+	
+	secant_global_position = Vector2(viewport_size.x / 2.0, viewport_size.y + hand.hand_radius - 100)
+	hand.hand_width = 0.8 * viewport_size.x
 	
 	camera.position = viewport_visible_rect.size / 2
 	
@@ -82,8 +98,38 @@ func _input(event):
 
 func update_hand_position(hand_size: int):
 	var viewport_size = get_viewport_rect().size
-	hand.position = Vector2(viewport_size.x / 2, viewport_size.y + hand.hand_radius)
-	#hand.position = Vector2(viewport_size.x / 2, viewport_size.y - deck.card_dimensions.y * deck.card_scale.y)
+	
+	line_2D.clear_points()
+	line_2D.width = 3
+	line_2D.default_color = Color.RED
+	line_2D.add_point(Vector2(0, viewport_size.y + - 100))  # First point
+	line_2D.add_point(Vector2(viewport_size.x, viewport_size.y - 100))  # Second point
+	
+	line_2D2.clear_points()
+	line_2D2.width = 3
+	line_2D2.default_color = Color.RED
+	line_2D2.add_point(Vector2(viewport_size.x * 0.2, -viewport_size.y))  # First point
+	line_2D2.add_point(Vector2(viewport_size.x * 0.2, 2 * viewport_size.y))  # Second point
+		
+	line_2D3.clear_points()
+	line_2D3.width = 3
+	line_2D3.default_color = Color.RED
+	line_2D3.add_point(Vector2(viewport_size.x * 0.8, -viewport_size.y))  # First point
+	line_2D3.add_point(Vector2(viewport_size.x * 0.8, 2 * viewport_size.y))  # Second point
+	
+	line_2D4.clear_points()
+	line_2D4.width = 3
+	line_2D4.default_color = Color.RED
+	line_2D4.add_point(Vector2(0, viewport_size.y))  # First point
+	line_2D4.add_point(Vector2(viewport_size.x, viewport_size.y))  # Second point
+	
+	##print("Hand global position: " + str(hand.global_position))
+	#hand_position = Vector2(viewport_size.x / 2, viewport_size.y + hand.hand_radius - (deck.card_dimensions.y * deck.card_scale.y) / 2.0)
+	hand_position = Vector2(viewport_size.x / 2, viewport_size.y + hand.hand_radius)
+	hand.hand_position = hand_position
+	print("Card dimensions: " + str(deck.card_dimensions))
+	print("Card scale: " + str(deck.card_scale))
+	hand.position = hand_position
 	#deck.position = Vector2(100, viewport_size.y - 100)
 
 func initialize_image_folder():
@@ -117,6 +163,8 @@ func initialize_grid():
 	var count = 0
 	var tile_number = 1
 	var tile_types = ["plain", "mountain", "ruin", "water"]
+	
+	
 	
 	for i in range(grid_radius * 2 + 1):
 		tile_matrix.append([])
@@ -221,7 +269,7 @@ func initialize_grid():
 			offset.x += tile_radius * 2
 			count += 1
 		
-		print(tile_matrix[i])
+		#print(tile_matrix[i])
 		
 		if i - grid_radius != 0 and (i - grid_radius) / abs(i - grid_radius) != 0:
 			if (i - grid_radius) / abs(i - grid_radius) < 0:
@@ -243,44 +291,46 @@ func initialize_grid():
 	#   - The same row (y): 3 potential neighbor positions (skipping itself)
 	#   - The row below (y + 1): 2 potential neighbor positions
 	tile_number = 0
+	
 	for y in range(tile_matrix.size()):
 		for x in range(tile_matrix[y].size()):
 			tile_number += 1
-			print()
-			print("Tile " + str(tile_number))
-			print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Coordinates"]))
-			print()
+			#print()
+			#print("Tile " + str(tile_number))
+			#print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Coordinates"]))
+			#print()
 			var current_tile_key = tile_matrix[y][x]
 			var neighbour_count = 1
 			
+			
+			var calibrator = 0
 			for row in range(3):
 				var ny = y - 1 + row
 				var local_column_count = 3 if row == 1 else 2
+				if row > 1 and y < middle_row:
+					calibrator = 1
+				elif row < 1 and y > middle_row:
+					#print("Y: " + str(y) + " , Row" + str(row))
+					calibrator = 1
+				else:
+					calibrator = 0
 				for column in range(local_column_count):
-					var nx = x - 1 + column           
+					var nx = x - 1 + column + calibrator    
 					if ny == y and nx == x:
+						
 						continue
 					var neighbour_tile_key = get_tile_key_at(ny, nx)
 					if neighbour_tile_key == null:
-						print("Self Y = " + str(y))
-						print("Self X = " + str(x))
-						print("Neighbour tile key:" + str(neighbour_tile_key))
-						print("Neighbour " + str(neighbour_count) + ": ID: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["ID"]))
-						print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["Coordinates"]))
-						print("Neighbour_" + str(neighbour_count) + " Relative Y = " + str(ny - y))
-						print("Neighbour_" + str(neighbour_count) + " Relative X = " + str(nx - x))
-						print()
+						#print("Self Y = " + str(y))
+						#print("Self X = " + str(x))
+						#print("Neighbour tile key:" + str(neighbour_tile_key))
+						#print("Neighbour " + str(neighbour_count) + ": ID: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["ID"]))
+						#print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["Coordinates"]))
+						#print("Neighbour_" + str(neighbour_count) + " Relative Y = " + str(ny - y))
+						#print("Neighbour_" + str(neighbour_count) + " Relative X = " + str(nx - x))
+						#print()
 						neighbour_count += 1
 						continue
-					
-					print("Self Y = " + str(y))
-					print("Self X = " + str(x))
-					print("Neighbour tile key:" + str(neighbour_tile_key))
-					print("Neighbour " + str(neighbour_count) + ": ID: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["ID"]))
-					print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["Coordinates"]))
-					print("Neighbour_" + str(neighbour_count) + " Relative Y = " + str(ny - y))
-					print("Neighbour_" + str(neighbour_count) + " Relative X = " + str(nx - x))
-					print()
 					
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Node"] = tile_dictionary[neighbour_tile_key]["Node"]
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["ID"] = tile_dictionary[neighbour_tile_key]["ID"]
@@ -289,6 +339,15 @@ func initialize_grid():
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Image"] = tile_dictionary[neighbour_tile_key]["Image"]
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Movement_cost"] = tile_dictionary[neighbour_tile_key]["Movement_cost"]
 					tile_dictionary[current_tile_key]["Neighbour_" + str(neighbour_count)]["Passable"] = tile_dictionary[neighbour_tile_key]["Passable"]
+					
+					#print("Self Y = " + str(y))
+					#print("Self X = " + str(x))
+					#print("Neighbour tile key:" + str(neighbour_tile_key))
+					#print("Neighbour " + str(neighbour_count) + ": ID: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["ID"]))
+					#print("Coordinates: " + str(tile_dictionary["Tile_" + str(tile_number)]["Neighbour_" + str(neighbour_count)]["Coordinates"]))
+					#print("Neighbour_" + str(neighbour_count) + " Relative Y = " + str(ny - y))
+					#print("Neighbour_" + str(neighbour_count) + " Relative X = " + str(nx - x))
+					#print()
 					
 					neighbour_count += 1
 					if neighbour_count > 6:
@@ -313,21 +372,22 @@ func initialize_unit():
 	unit.update_image(tile_radius)
 
 func _on_button_pressed():
-	print("Pressed!")
+	#print("Pressed!")
 	hand.draw_card(deck)
 	update_hand_position(hand.hand_size)
 
 func update_fog(add_or_remove, tile_key):
-	print("Tile key: " + str(tile_key))
+	#print("Tile key: " + str(tile_key))
 	if add_or_remove == "add":
 		for i in range(6):
 			var node = tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Node"]
-			print("Neighbour " + str(i + 1))
+			#print("Neighbour " + str(i + 1))
 			if node!= null:
 				node.update_image(1, image_dictionary["fog"], image_scale, null)
 	elif add_or_remove == "remove":
+		tile_dictionary["Tile_" + str(tile_key)]["Node"].update_image(1, tile_dictionary["Tile_" + str(tile_key)]["Image"], image_scale, null)
 		for i in range(6):
 			var node = tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Node"]
-			print("Neighbour " + str(i + 1))
+			#print("Neighbour " + str(i + 1))
 			if node != null:
 				node.update_image(1, tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Image"], image_scale, null)
