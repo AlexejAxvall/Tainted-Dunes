@@ -2,7 +2,7 @@
 
 extends Control
 
-@onready var card = get_parent().get_node("Card")
+@onready var card = get_node("Card")
 @onready var hand = get_parent().get_node("Hand")
 
 

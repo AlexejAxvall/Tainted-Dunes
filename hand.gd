@@ -161,7 +161,7 @@ func remove_card(card):
 	arrange_cards()
 
 func _draw():
-	draw_circle(Vector2.ZERO, hand_radius, Color(255, 0, 0), false, -1.0, true)
+	draw_circle(Vector2.ZERO, hand_radius, Color(255, 0, 0), false, 1.0, true)
 
 func find_intersection(circle_global_position: Vector2, r: float, a: float) -> Array:
 	var discriminant = r * r - (a - circle_global_position.x) * (a - circle_global_position.x)

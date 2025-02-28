@@ -20,9 +20,6 @@ func _ready():
 	collision_polygon_2D.polygon = calculate_hexagon(tile_side_length)
 
 
-func _process(delta):
-	pass
-
 func calculate_hexagon(tile_side_length):
 	var vertices = []
 	for i in range(6):

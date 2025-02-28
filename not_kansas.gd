@@ -14,7 +14,7 @@ extends Node2D
 @onready var line_2D3 = $CanvasLayer/Line2D3
 @onready var line_2D4 = $CanvasLayer/Line2D4
 
-@export var grid_radius = 5
+@export var grid_radius = 6
 
 var viewport_visible_rect
 var viewport_size
@@ -62,7 +62,7 @@ func _ready():
 		hand.draw_card(deck)
 	
 	
-	update_hand_position(hand.hand_size)
+	update_hand_position()
 	
 func _input(event):
 	if event is InputEventMouseButton:
@@ -96,7 +96,7 @@ func _input(event):
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
 		camera.position -= event.relative / camera.zoom
 
-func update_hand_position(hand_size: int):
+func update_hand_position():
 	var viewport_size = get_viewport_rect().size
 	
 	line_2D.clear_points()
@@ -374,7 +374,7 @@ func initialize_unit():
 func _on_button_pressed():
 	#print("Pressed!")
 	hand.draw_card(deck)
-	update_hand_position(hand.hand_size)
+	update_hand_position()
 
 func update_fog(add_or_remove, tile_key):
 	#print("Tile key: " + str(tile_key))
