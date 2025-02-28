@@ -45,7 +45,7 @@ func _ready():
 	print("Dif: " + str(a - hand_radius))
 	print("A distance from half of viewport: " + str(a - viewport_size.x / 2))
 	
-	print(deck.card_dimensions.y * deck.card_scale.y)
+	#print(deck.card_dimensions.y * deck.card_scale.y)
 	hand_position = Vector2(viewport_size.x / 2, viewport_size.y - card_dimensions.y * card_scale.y + hand_radius)
 	var base
 	var height
@@ -66,27 +66,16 @@ func _ready():
 		max_card_rotation = 30
 	print("Max_rot: " + str(max_card_rotation))
 	
-	if max_hand_size % 2 == 0:
-		angle_step = 2.0 * max_card_rotation / max_hand_size
-		print("Angle step: " + str(angle_step))
-		print("Angle step * max hand size: " + str(angle_step * max_hand_size))
-		for i in range((max_hand_size + 1)):
-			card_rotations.append(-max_card_rotation + angle_step * i)
-		index_centre = max_hand_size / 2
-		for i in range((max_hand_size + 1)):
-			card_positions.append(Vector2(500, -500))
-			#card_positions.append(Vector2(hand_radius * cos(deg_to_rad(90 + max_card_rotation - angle_step * i)), -hand_radius * sin(deg_to_rad(90 + max_card_rotation - angle_step * i))))
-			print("angle: " + str(90 + max_card_rotation - angle_step * i))
-	else:
-		angle_step = max_card_rotation / (max_hand_size / 2)
-		for i in range(max_hand_size):
-			card_rotations.append(-max_card_rotation + angle_step * i)
-		
-		for i in range(max_hand_size):
-			card_positions.append(Vector2(100 * i, 500))
-			#card_positions.append(Vector2(hand_radius * cos(deg_to_rad(90 + max_card_rotation - angle_step * i)), -hand_radius * sin(deg_to_rad(90 + max_card_rotation - angle_step * i))))
-	
-		index_centre = max_hand_size / 2 + 1
+	angle_step = 2.0 * max_card_rotation / (max_hand_size * 2)
+	print("Angle step: " + str(angle_step))
+	print("Angle step * max hand size: " + str(angle_step * max_hand_size))
+	for i in range(2 * max_hand_size - 1):
+		card_rotations.append(-max_card_rotation + angle_step * i)
+	index_centre = max_hand_size / 2
+	for i in range(2 * max_hand_size - 1):
+		#card_positions.append(Vector2(500, -500))
+		card_positions.append(Vector2(hand_radius * cos(deg_to_rad(90 + max_card_rotation - angle_step * i)), -hand_radius * sin(deg_to_rad(90 + max_card_rotation - angle_step * i))))
+		print("angle: " + str(90 + max_card_rotation - angle_step * i))
 	
 	print("Card positions: " + str(card_positions))
 	print("Card rotations: " + str(card_rotations))
@@ -126,34 +115,18 @@ func arrange_cards():
 		#print("Hand offset: " + str(hand_offset))
 	
 	#print("Hand size: " + str(hand_size))
-	var calibrator = 0
+	var index_hand_middle = len(hand_array) / 2
+	var index_positions_middle = len(card_positions) / 2 + 1
+	var index_rotations_middle = len(card_rotations) / 2 + 1
+	print("Index_hand_middle: " + str(index_hand_middle))
+	print("Index_positions_middle: " + str(index_positions_middle))
+	var coefficient = -1
 	for i in range(hand_size):
-		hand_array[i].position = card_positions[i]
+		coefficient *= -1
+		hand_array[i].position = card_positions[index_positions_middle + coefficient * i]
 		#hand_array[i].position = Vector2(192 * i, -hand_radius)
 		if hand_array[i]:
-			if hand_size % 2 == 0:
-				if i == hand_offset - 1:
-					#print("Index: 2")
-					#print("Rotation deg: " + str(card_rotations[index_centre - 1]))
-					#print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - 1])))
-					card_rotation = deg_to_rad(card_rotations[index_centre - 1])
-				elif i == hand_offset:
-					#print("Index: 4")
-					#print("Rotation deg: " + str(card_rotations[index_centre + 1]))
-					#print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre + 1])))
-					card_rotation = deg_to_rad(card_rotations[index_centre + 1])
-					calibrator = 1
-				else:
-					#print("Index: " + str(index_centre - hand_offset + i + calibrator))
-					#print("Rotation deg: " + str(card_rotations[index_centre - hand_offset + i + calibrator]))
-					#print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - hand_offset + i + calibrator])))
-					card_rotation = deg_to_rad(card_rotations[index_centre - hand_offset + i + calibrator])	
-			else:
-				#print("Index: " + str(index_centre - hand_offset + i - 1))
-				#print("Rotation deg: " + str(card_rotations[index_centre - hand_offset + i - 1]))
-				#print("Rotation rad: " + str(deg_to_rad(card_rotations[index_centre - hand_offset + i - 1])))
-				card_rotation = deg_to_rad(card_rotations[index_centre - hand_offset + i])
-			hand_array[i].rotation = card_rotation
+			hand_array[i].rotation = card_rotations[index_rotations_middle + coefficient * i]
 
 func remove_card(card):
 	hand_array.erase(card)
@@ -168,9 +141,14 @@ func find_intersection(circle_global_position: Vector2, r: float, a: float) -> A
 	if discriminant < 0:
 		return []
 	elif discriminant == 0:
+		print("Intersection points: " + str(Vector2(a, circle_global_position.y)))
+		print("Arc tan: " + str(rad_to_deg(atan(circle_global_position.y / a))))
 		return [Vector2(a, circle_global_position.y)]
 	else:
 		var sqrt_d = sqrt(discriminant)
 		var y2 = circle_global_position.y + sqrt_d
 		var y1 = circle_global_position.y - sqrt_d
+		print("Intersection points: " + str(Vector2(a, y1)) + " " + str(Vector2(a, y2)))
+		print("Arc tan y1: " + str(rad_to_deg(atan(y1 / a))))
+		print("Arc tan y2: " + str(rad_to_deg(atan(y2 / a))))
 		return [Vector2(a, y1), Vector2(a, y2)]

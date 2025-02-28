@@ -127,8 +127,8 @@ func update_hand_position():
 	#hand_position = Vector2(viewport_size.x / 2, viewport_size.y + hand.hand_radius - (deck.card_dimensions.y * deck.card_scale.y) / 2.0)
 	hand_position = Vector2(viewport_size.x / 2, viewport_size.y + hand.hand_radius)
 	hand.hand_position = hand_position
-	print("Card dimensions: " + str(deck.card_dimensions))
-	print("Card scale: " + str(deck.card_scale))
+	#print("Card dimensions: " + str(deck.card_dimensions))
+	#print("Card scale: " + str(deck.card_scale))
 	hand.position = hand_position
 	#deck.position = Vector2(100, viewport_size.y - 100)
 
