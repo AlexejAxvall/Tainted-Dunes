@@ -16,8 +16,10 @@ script = ExtResource("1_3c5gl")
 [node name="Deck" parent="CanvasLayer" instance=ExtResource("2_3pdmd")]
 
 [node name="Card" parent="CanvasLayer/Deck" instance=ExtResource("2_nh4v5")]
-offset_left = -1218.0
-offset_right = -1218.0
+offset_left = -887.0
+offset_top = -136.0
+offset_right = -887.0
+offset_bottom = -136.0
 
 [node name="Hand" parent="CanvasLayer" instance=ExtResource("3_wsshh")]
 

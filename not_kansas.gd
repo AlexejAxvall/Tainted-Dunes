@@ -14,6 +14,15 @@ extends Node2D
 @onready var line_2D3 = $CanvasLayer/Line2D3
 @onready var line_2D4 = $CanvasLayer/Line2D4
 
+var previous_window_size = DisplayServer.window_get_size()
+
+func _notification(what):
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		print("Window minimized!")
+
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		print("Window maximized/restored!")
+
 @export var grid_radius = 6
 
 var viewport_visible_rect
@@ -50,25 +59,27 @@ func _ready():
 	viewport_size = get_viewport_rect().size
 	
 	secant_global_position = Vector2(viewport_size.x / 2.0, viewport_size.y + hand.hand_radius - 100)
-	hand.hand_width = 0.8 * viewport_size.x
 	
 	camera.position = viewport_visible_rect.size / 2
 	
 	initialize_image_folder()
 	initialize_grid()
 	initialize_unit()
-	
-	while hand.hand_size < 1:
-		hand.draw_card(deck)
-	
-	
 	update_hand_position()
-	
+
+func _process(delta):
+	var current_window_size = DisplayServer.window_get_size()
+	if current_window_size != previous_window_size:
+		previous_window_size = current_window_size
+		update_hand_position()
+		print("Window resized/maximized: ", current_window_size)
+		hand.update_variables()
+
 func _input(event):
 	if event is InputEventMouseButton:
 		if event.pressed:
 			old_selected_node = selected_node
-			await get_tree().create_timer(0.1).timeout
+			await get_tree().create_timer(0).timeout
 			if not unit_clicked and not tile_clicked:
 				if event.button_index == MOUSE_BUTTON_LEFT:
 					pass
