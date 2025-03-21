@@ -1,8 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://0hx2c1ddh4yb"]
+[gd_scene load_steps=6 format=3 uid="uid://0hx2c1ddh4yb"]
 
 [ext_resource type="Script" path="res://card.gd" id="1_m371b"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_qj2ge"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gqefp"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wp4on"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b8i14"]
 
 [node name="Card" type="Control"]
 z_index = 1
@@ -64,6 +70,21 @@ z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("CircleShape2D_qj2ge")
+
+[node name="Left_box" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Left_box"]
+shape = SubResource("RectangleShape2D_gqefp")
+
+[node name="Centre_box" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Centre_box"]
+shape = SubResource("RectangleShape2D_wp4on")
+
+[node name="Right_box" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Right_box"]
+shape = SubResource("RectangleShape2D_b8i14")
 
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

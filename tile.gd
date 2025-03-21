@@ -67,7 +67,6 @@ func _on_area_2d_area_shape_entered(area_rid, area, area_shape_index, local_shap
 
 func _on_area_2d_2_area_entered(area):
 	if area.is_in_group("Unit"):
-		parent.update_fog("remove", id)
-
-	#if area.has_group("Unit"):
-		#parent.update_fog("add", "Tile_" + id)
+		var unit_node = area.get_parent()
+		parent.update_fog("remove", id, parent.get_node("Unit").previous_tile_id, unit_node)
+		unit_node.previous_tile_id = id

@@ -15,6 +15,10 @@ var id
 var is_selected = false
 var toggle : bool
 
+var previous_tile_id = null
+
+var sight_range = 2
+
 var stats_dictionary = {
 	"Type" : null,
 	"ID" : null,

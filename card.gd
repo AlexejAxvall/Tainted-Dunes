@@ -7,6 +7,13 @@ extends Control
 @onready var button = $TextureRect/Button
 @onready var text_edit = $TextureRect/TextEdit
 
+@onready var left_box = $Left_box
+@onready var left_box_collision_shape2D = $Left_box/CollisionShape2D
+@onready var centre_box = $Centre_box
+@onready var centre_box_collision_shape2D = $Centre_box/CollisionShape2D
+@onready var right_box = $Right_box
+@onready var right_box_collision_shape2D = $Right_box/CollisionShape2D
+
 var id
 
 var viewport_size
@@ -60,6 +67,22 @@ func _ready():
 	texture_rect_size = texture_rect.size
 	
 	card_dimensions = texture_rect_size
+	
+	left_box.position = Vector2(-card_dimensions.x * 0.375, -card_dimensions.y * 0.5)
+	var left_box_shape = RectangleShape2D.new()
+	left_box_shape.extents = Vector2(card_dimensions.x * 0.125, card_dimensions.y * 0.5)
+	left_box_collision_shape2D.shape = left_box_shape
+	
+	centre_box.position = Vector2(0, -card_dimensions.y * 0.5)
+	var centre_box_shape = RectangleShape2D.new()
+	centre_box_shape.extents = Vector2(card_dimensions.x * 0.25, card_dimensions.y * 0.5)
+	centre_box_collision_shape2D.shape = centre_box_shape
+	
+	right_box.position = Vector2(card_dimensions.x * 0.375, -card_dimensions.y * 0.5)
+	var right_box_shape = RectangleShape2D.new()
+	right_box_shape.extents = Vector2(card_dimensions.x * 0.125, card_dimensions.y * 0.5)
+	right_box_collision_shape2D.shape = left_box_shape
+	
 	if is_instantiate != true:
 		parent.card_dimensions = card_dimensions
 	
@@ -103,15 +126,15 @@ func highlight_card():
 	var loop_amount
 	var offset_1 = 0
 	
-	if id == 1:
-		loop_amount = 2
-		offset_1 = 1
-	elif id == parent.hand_size:
-		loop_amount = 2
-	else:
-		loop_amount = 3
-	for i in range(loop_amount):
-			print(str(parent.hand_dictionary["Card_" + str(id - 1 + offset_1 + i)]["Z_index"]))
+	#if id == 1:
+		#loop_amount = 2
+		#offset_1 = 1
+	#elif id == parent.hand_size:
+		#loop_amount = 2
+	#else:
+		#loop_amount = 3
+	#for i in range(loop_amount):
+			#print(str(parent.hand_dictionary["Card_" + str(id - 1 + offset_1 + i)]["Z_index"]))
 	
 func play_card():
 	print("Played:", card_dictionary["Name"])
@@ -153,3 +176,7 @@ func _on_texture_rect_mouse_exited():
 
 
 #func fetch_new_data():
+
+#func update_mouse_filter(list):
+	#for node in list:
+		#node.mouse_filter = Control.MOUSE_FILTER_IGNORE

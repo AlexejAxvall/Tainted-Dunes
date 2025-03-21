@@ -23,7 +23,7 @@ func _notification(what):
 	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
 		print("Window maximized/restored!")
 
-@export var grid_radius = 6
+@export var grid_radius = 4
 
 var viewport_visible_rect
 var viewport_size
@@ -75,6 +75,7 @@ func _process(delta):
 		print("Window resized/maximized: ", current_window_size)
 		hand.update_variables()
 
+
 func _input(event):
 	if event is InputEventMouseButton:
 		if event.pressed:
@@ -96,17 +97,25 @@ func _input(event):
 				click_blocked = false
 			unit_clicked = false
 			tile_clicked = false
-	
+
+
+
 	if event is InputEventMouseButton:
+
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+
 			camera.zoom *= Vector2(1.1, 1.1)
 
+
+
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+
 			camera.zoom *= Vector2(0.9, 0.9)
 	
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
+ 
 		camera.position -= event.relative / camera.zoom
-
+			
 func update_hand_position():
 	var viewport_size = get_viewport_rect().size
 	
@@ -251,7 +260,8 @@ func initialize_grid():
 			tile_dictionary[tile_key] = {
 				"Node": tile,
 				"ID": tile_number,
-				"Coordinates": [j, i],
+				"Index": Vector2(i, j),
+				"Coordinates": Vector2(j, i),
 				"Position": tile_position,
 				"Type": type,
 				"Image": image,
@@ -280,7 +290,7 @@ func initialize_grid():
 			offset.x += tile_radius * 2
 			count += 1
 		
-		#print(tile_matrix[i])
+		print(tile_matrix[i])
 		
 		if i - grid_radius != 0 and (i - grid_radius) / abs(i - grid_radius) != 0:
 			if (i - grid_radius) / abs(i - grid_radius) < 0:
@@ -387,18 +397,157 @@ func _on_button_pressed():
 	hand.draw_card(deck)
 	update_hand_position()
 
-func update_fog(add_or_remove, tile_key):
+func update_fog(add_or_remove, current_tile_key, previous_tile_key, unit_node):
+	print("Updating fog!")
 	#print("Tile key: " + str(tile_key))
+	var unit_node_index = tile_dictionary["Tile_" + str(current_tile_key)]["Index"]
+	var unit_node_coordinates = tile_dictionary["Tile_" + str(current_tile_key)]["Coordinates"]
+	var current_centre_node = tile_dictionary["Tile_" + str(current_tile_key)]["Node"]
+	var previous_centre_node = null
+	
+	if previous_tile_key != null:
+		previous_centre_node = tile_dictionary["Tile_" + str(previous_tile_key)]["Node"]
+	
+	if previous_tile_key != null and previous_tile_key != current_tile_key:
+		previous_centre_node.update_image(1, tile_dictionary["Tile_" + str(previous_tile_key)]["Image"], image_scale, Color(0.5, 0.5, 0.5, 1))
+		for i in range(6):
+			var node = tile_dictionary["Tile_" + str(previous_tile_key)]["Neighbour_" + str(i + 1)]["Node"]
+			#print("Neighbour " + str(i + 1))
+			if node!= null:
+				node.update_image(1, tile_dictionary["Tile_" + str(previous_tile_key)]["Neighbour_" + str(i + 1)]["Image"], image_scale, Color(0.5, 0.5, 0.5, 1))
+	
 	if add_or_remove == "add":
 		for i in range(6):
-			var node = tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Node"]
+			var node = tile_dictionary["Tile_" + str(current_tile_key)]["Neighbour_" + str(i + 1)]["Node"]
 			#print("Neighbour " + str(i + 1))
 			if node!= null:
 				node.update_image(1, image_dictionary["fog"], image_scale, null)
 	elif add_or_remove == "remove":
-		tile_dictionary["Tile_" + str(tile_key)]["Node"].update_image(1, tile_dictionary["Tile_" + str(tile_key)]["Image"], image_scale, null)
+		tile_dictionary["Tile_" + str(current_tile_key)]["Node"].update_image(1, tile_dictionary["Tile_" + str(current_tile_key)]["Image"], image_scale, null)
 		for i in range(6):
-			var node = tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Node"]
+			var node = tile_dictionary["Tile_" + str(current_tile_key)]["Neighbour_" + str(i + 1)]["Node"]
 			#print("Neighbour " + str(i + 1))
 			if node != null:
-				node.update_image(1, tile_dictionary["Tile_" + str(tile_key)]["Neighbour_" + str(i + 1)]["Image"], image_scale, null)
+				node.update_image(1, tile_dictionary["Tile_" + str(current_tile_key)]["Neighbour_" + str(i + 1)]["Image"], image_scale, null)
+	
+	
+	var sight_range = unit_node.sight_range
+	var columns_on_rows = []
+	
+	var search_range_2 = 2 * sight_range + 1
+	var offset_2 = 0
+	
+	if unit_node_coordinates.y + sight_range > tile_matrix.size() - 1:
+		search_range_2 = 2 * sight_range + 1 + ((tile_matrix.size() - 1) - (unit_node_coordinates.y + sight_range))
+		offset_2 = ((tile_matrix.size() - 1) - (unit_node_coordinates.y + sight_range))
+	
+	if unit_node_coordinates.y - sight_range < 0:
+		search_range_2 = 2 * sight_range + 1 + (unit_node_coordinates.y - sight_range)
+		offset_2 += unit_node_coordinates.y - sight_range
+
+	print("Search_range_2: " + str(search_range_2))
+	print("Offset 2: " + str(offset_2))
+	
+	for i in range(search_range_2):
+		var index_2 = unit_node_coordinates.y - sight_range
+		index_2 = clamp(index_2, 0, 1000)
+		print("Count:" + str(i))
+		print("index_2 + i: " + str(index_2 + i))
+		if index_2 + i <= tile_matrix.size() - 1:
+			columns_on_rows.append(tile_matrix[index_2 + i].size())
+			
+	print(columns_on_rows)
+	print()
+	#print("unit_node_index: " + str(unit_node_index))
+	var calculated_tile
+	var coefficient = 1
+	var calibrator = 0
+	var search_range = 0
+	print("Unit coordinates: " + str(unit_node_coordinates))
+	#print("Tile matrix size / 2: " + str(tile_matrix.size() / 2))
+
+	var search_ranges = []
+	for row in range(sight_range + 1):
+		if row == 0:
+			search_ranges.append(sight_range + 1 + row)
+			search_ranges.append(sight_range + 1 + row)
+		elif row == sight_range:
+			search_ranges.insert(sight_range, sight_range + 1 + row)
+		else:
+			search_ranges.insert(row, sight_range + 1 + row)
+			search_ranges.insert(search_ranges.size() - 1 - row, sight_range + 1 + row)
+	print("Search_ranges: " + str(search_ranges))
+	
+	var columns_on_rows_index = -1
+	for row in range(1 + 2 * sight_range):
+		if unit_node_coordinates.y + row - sight_range >= 0 and unit_node_coordinates.y + row - sight_range <= tile_matrix.size() - 1:
+			columns_on_rows_index += 1
+			
+			var offset_left = 0
+			var offset_right = 0
+			var offset_range = 0
+			
+			
+			if unit_node_coordinates.y == tile_matrix.size() / 2 or row == tile_matrix.size() / 2:
+				calibrator = 0
+			else:
+				if row < sight_range:
+					calibrator = sight_range - row
+				elif row >= sight_range:
+					calibrator = row - sight_range
+				
+			if row > sight_range:
+				coefficient = -1
+			
+			print("Calibrator: " + str(calibrator))
+			
+			
+			search_range = search_ranges[row]
+			print("Search ranges[row]: " + str(search_range))
+			
+			if unit_node_coordinates.x - sight_range + calibrator < 0:
+				offset_left = sight_range - (unit_node_coordinates.x + calibrator)
+				print("Too left")
+			if unit_node_coordinates.x - sight_range + calibrator + search_range > columns_on_rows[columns_on_rows_index]:
+				offset_right = unit_node_coordinates.x - sight_range + calibrator + search_range - (columns_on_rows[columns_on_rows_index])
+				print("Too right")
+			
+			
+			search_range -= offset_left
+			search_range -= offset_right
+			
+			print("Offset left: " + str(offset_left))
+			print("Global currently searched row: " + str(unit_node_coordinates.y + row - sight_range))
+			print("Columns on row index: " + str(columns_on_rows_index))
+			print("Columns on row - 1: " + str(columns_on_rows[columns_on_rows_index] - 1))
+			print("End of search index: " + str(unit_node_coordinates.x + calibrator - sight_range + search_range))
+			print("Offset right: " + str(offset_right))
+			print("Offset range: " + str(offset_range))
+			
+			print("Search range: " + str(search_range))
+			
+			
+			var y_index = 0
+			var x_index = 0
+			for column in range(search_range):
+				print("unit_node_coordinates.x + calibrator + offset_left - offset_right + column - sight_range: " + str(unit_node_coordinates.x + calibrator + offset_left - offset_right + column - sight_range))
+				y_index = unit_node_coordinates.y - sight_range + row
+
+				x_index = unit_node_coordinates.x - sight_range + calibrator + offset_left + column
+				var minimum = 0
+				var maximum = unit_node_coordinates.x - sight_range + calibrator + offset_left + column 
+				x_index = clamp(x_index, minimum, maximum)
+				#print("Column: " + str(column))
+				print("x_index: " + str(x_index) + ", y_index: " + str(y_index))
+				calculated_tile = tile_dictionary[tile_matrix[y_index][x_index]]
+				var node = calculated_tile["Node"]
+				if add_or_remove == "remove":
+					node.update_image(1, calculated_tile["Image"], image_scale, null)
+				
+				print("Calculated tile: " + str(calculated_tile["ID"]))
+			print()
+		elif unit_node_coordinates.y + row - sight_range < 0:
+			print("Relative row " + str(-sight_range + row) + " doesnt exist")
+		elif unit_node_coordinates.y + row - sight_range > tile_matrix.size() - 1:
+			print("Relative row " + str(-sight_range + row) + " doesnt exist")
+	print()
