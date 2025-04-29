@@ -48,7 +48,7 @@ func _ready():
 	#print("Parent: " + str(parent))
 	if recieved_z_index != null:
 		z_index = recieved_z_index
-		print("Z_index: " + str(z_index))
+		#print("Z_index: " + str(z_index))
 	
 	texture_rect.texture = preload("res://Images/Card_frame.png")
 	
@@ -107,7 +107,8 @@ func _process(delta):
 func _input(event):
 	if event is InputEventMouseMotion:
 		if get_global_rect().has_point(event.position):
-			print("Mouse is currently over the card (manual check).")
+			pass
+			#print("Mouse is currently over the card (manual check).")
 
 	if is_playable and event is InputEventMouseButton and event.pressed:
 		if get_global_rect().has_point(event.position):
@@ -121,7 +122,7 @@ func highlight_card():
 	global_position.y = parent.viewport_size.y
 	rotation = 0
 	scale = Vector2(2, 2)
-	print("Self and adjacent z_index: ")
+	#print("Self and adjacent z_index: ")
 	
 	var loop_amount
 	var offset_1 = 0
@@ -137,17 +138,17 @@ func highlight_card():
 			#print(str(parent.hand_dictionary["Card_" + str(id - 1 + offset_1 + i)]["Z_index"]))
 	
 func play_card():
-	print("Played:", card_dictionary["Name"])
+	#print("Played:", card_dictionary["Name"])
 	get_parent().remove_card(self)
 	queue_free()
 
 func _on_texture_rect_mouse_entered():
 	if parent.is_card_highlighted != true:
-		print("Mouse entered card: " + str(id))
+		#print("Mouse entered card: " + str(id))
 		is_hovering = true
 
 func _on_texture_rect_mouse_exited():
-	print("Mouse exited card: " + str(id))
+	#print("Mouse exited card: " + str(id))
 	if highlighting:
 		highlighting = false
 		z_index = recieved_z_index

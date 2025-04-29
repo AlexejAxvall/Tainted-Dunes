@@ -17,7 +17,8 @@ var toggle : bool
 
 var previous_tile_id = null
 
-var sight_range = 2
+var was_just_deployed = true
+var sight_range = 3
 
 var stats_dictionary = {
 	"Type" : null,

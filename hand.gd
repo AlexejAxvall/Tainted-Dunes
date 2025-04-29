@@ -37,7 +37,7 @@ func _ready():
 
 
 func update_variables():
-	print("Updating variables")
+	#print("Updating variables")
 	update_count += 1
 	viewport_size = get_viewport_rect().size
 	a = viewport_size.x * 0.8
@@ -48,32 +48,34 @@ func update_variables():
 	var height
 	if len(find_intersection(hand_position, hand_radius, a)) > 0:
 		var triangle_base_height = find_intersection(hand_position, hand_radius, a)[1]
-		print("Triangle_base_height: " + str(triangle_base_height))
+		#print("Triangle_base_height: " + str(triangle_base_height))
 		base = triangle_base_height.x
-		print("Base: " + str(base))
+		#print("Base: " + str(base))
 		height = triangle_base_height.y
-		print("Height: " + str(height))
-		print("Intersections: " + str(len(find_intersection(hand_position, hand_radius, a))))
-		print()
+		#print("Height: " + str(height))
+		#print("Intersections: " + str(len(find_intersection(hand_position, hand_radius, a))))
+		#print()
 	elif len(find_intersection(hand_position, hand_radius, a)) == 0:
-		print("Error!")
-		print("Intersections: " + str(len(find_intersection(hand_position, hand_radius, a))))
-		print()
+		pass
+		#print("Error!")
+		#print("Intersections: " + str(len(find_intersection(hand_position, hand_radius, a))))
+		#print()
 		
 	if height != null:
 		max_card_rotation = 90 - rad_to_deg(atan(height / base))
 	else:
-		print("Error!")
+		pass
+		#print("Error!")
 		
-	print("Max_card_rotation deg: " + str(max_card_rotation))
+	#print("Max_card_rotation deg: " + str(max_card_rotation))
 	
 	if max_hand_size % 2 == 0:
 		angle_step = max_card_rotation / (max_hand_size / 2.0)
 	else:
 		angle_step = max_card_rotation / (max_hand_size / 2.0 - 0.5)
 	
-	print("Angle step: " + str(angle_step))
-	print("Angle step * max hand size: " + str(angle_step * max_hand_size))
+	#print("Angle step: " + str(angle_step))
+	#print("Angle step * max hand size: " + str(angle_step * max_hand_size))
 	card_rotations.clear()
 	card_positions.clear()
 	var card_rotations_deg = []
@@ -82,13 +84,13 @@ func update_variables():
 		card_rotations.append(deg_to_rad(-max_card_rotation + angle_step * i))
 	for i in range(max_hand_size):
 		card_positions.append(Vector2(hand_radius * cos(deg_to_rad(90 + max_card_rotation - angle_step * i)), -hand_radius * sin(deg_to_rad(90 + max_card_rotation - angle_step * i))))
-		print("angle: " + str(90 + max_card_rotation - angle_step * i))
-	print()
+		#print("angle: " + str(90 + max_card_rotation - angle_step * i))
+	#print()
 	
-	print("Card positions: " + str(card_positions))
-	print()
-	print("Card rotations deg: " + str(card_rotations_deg))
-	print()
+	#print("Card positions: " + str(card_positions))
+	#print()
+	#print("Card rotations deg: " + str(card_rotations_deg))
+	#print()
 	
 	arrange_cards()
 
@@ -111,7 +113,7 @@ func draw_card(deck):
 			hand_size = hand_array.size()
 			add_child(card)
 			arrange_cards()
-			print("Hand:", hand_array)
+			#print("Hand:", hand_array)
 			queue_redraw()
 
 
@@ -129,15 +131,15 @@ func remove_card(card):
 
 
 func arrange_cards():
-	print("From arrange_cards")
-	print("Hand size: " + str(hand_size))
-	print("Hand_position: " + str(hand_position))
-	print("Viewport_size: " + str(viewport_size))
-	print("Viewport_size.x / 2: " + str(viewport_size.x / 2))
-	print("a: " + str(a))
-	print("a - viewport_size.x / 2: " + str(a - viewport_size.x / 2))
-	print("Hand_radius: " + str(hand_radius))
-	print()
+	#print("From arrange_cards")
+	#print("Hand size: " + str(hand_size))
+	#print("Hand_position: " + str(hand_position))
+	#print("Viewport_size: " + str(viewport_size))
+	#print("Viewport_size.x / 2: " + str(viewport_size.x / 2))
+	#print("a: " + str(a))
+	#print("a - viewport_size.x / 2: " + str(a - viewport_size.x / 2))
+	#print("Hand_radius: " + str(hand_radius))
+	#print()
 	
 	var index_hand_middle = len(hand_array) / 2
 	#print("Index_hand_middle: " + str(index_hand_middle))
@@ -158,26 +160,26 @@ func arrange_cards():
 	#draw_circle(Vector2.ZERO, hand_radius, Color(255, 0, 0), false, 1.0, true)
 
 func find_intersection(circle_global_position: Vector2, r: float, a: float) -> Array:
-	print()
-	print("From find_intersection")
-	print("Hand_position: " + str(hand_position))
-	print("Viewport_size: " + str(viewport_size))
-	print("Viewport_size.x / 2: " + str(viewport_size.x / 2))
-	print("a: " + str(a))
-	print("a - viewport_size.x / 2: " + str(a - viewport_size.x / 2))
-	print("Circle_global_position: " + str(circle_global_position))
-	print("Circle_global_position.y - viewport_size.y: " + str(circle_global_position.y - viewport_size.y))
-	print("Circle_radius: " + str(r))
-	print()
+	#print()
+	#print("From find_intersection")
+	#print("Hand_position: " + str(hand_position))
+	#print("Viewport_size: " + str(viewport_size))
+	#print("Viewport_size.x / 2: " + str(viewport_size.x / 2))
+	#print("a: " + str(a))
+	#print("a - viewport_size.x / 2: " + str(a - viewport_size.x / 2))
+	#print("Circle_global_position: " + str(circle_global_position))
+	#print("Circle_global_position.y - viewport_size.y: " + str(circle_global_position.y - viewport_size.y))
+	#print("Circle_radius: " + str(r))
+	#print()
 	
 	var discriminant = r * r - (a - circle_global_position.x) * (a - circle_global_position.x)
 	if discriminant < 0:
 		return []
 	elif discriminant == 0:
 		pointer_1.position = Vector2(a, circle_global_position.y)
-		print("Intersection points: " + str(Vector2(a, circle_global_position.y)))
-		print("Arc tan: " + str(rad_to_deg(atan(circle_global_position.y / a))))
-		print()
+		#print("Intersection points: " + str(Vector2(a, circle_global_position.y)))
+		#print("Arc tan: " + str(rad_to_deg(atan(circle_global_position.y / a))))
+		#print()
 		return [Vector2(a, circle_global_position.y)]
 	else:
 		var sqrt_d = sqrt(discriminant)
@@ -187,14 +189,15 @@ func find_intersection(circle_global_position: Vector2, r: float, a: float) -> A
 		var y1 = -sqrt_d
 		pointer_1.position = Vector2(x1, y1)
 		pointer_2.position = Vector2(x2, y2)
-		print("Intersection points relative to circle centre: " + str(Vector2(x1, y1)) + " " + str(Vector2(x2, y2)))
-		print("hand_position.y - y2: " + str(hand_position.y - y2))
-		print("Viewport_size.y: " + str(viewport_size.y))
-		print("Arc tan y1: " + str(rad_to_deg(atan(y1 / x1))))
-		print("Arc tan y2: " + str(rad_to_deg(atan(y2 / x2))))
-		print()
+		#print("Intersection points relative to circle centre: " + str(Vector2(x1, y1)) + " " + str(Vector2(x2, y2)))
+		#print("hand_position.y - y2: " + str(hand_position.y - y2))
+		#print("Viewport_size.y: " + str(viewport_size.y))
+		#print("Arc tan y1: " + str(rad_to_deg(atan(y1 / x1))))
+		#print("Arc tan y2: " + str(rad_to_deg(atan(y2 / x2))))
+		#print()
 		return [Vector2(x1, y1), Vector2(x2, y2)]
 
 func _notification(what):
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		print("Update count: " + str(update_count))
+		pass
+		#print("Update count: " + str(update_count))

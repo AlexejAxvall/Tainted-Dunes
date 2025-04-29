@@ -35,7 +35,7 @@ func create_deck():
 		card.card_dictionary["Name"] = "Resources"
 		deck_of_cards.append(card)
 	deck_of_cards.shuffle()
-	print("Deck: " + str(deck_of_cards))
+	#print("Deck: " + str(deck_of_cards))
 	
 func draw_card():
 	if deck_of_cards.is_empty():

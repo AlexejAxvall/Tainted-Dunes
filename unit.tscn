@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://bxjlwuho1r6un"]
 
-[ext_resource type="Script" path="res://unit.gd" id="1_8i7ff"]
+[ext_resource type="Script" uid="uid://byorwlj37y5tu" path="res://unit.gd" id="1_8i7ff"]
 [ext_resource type="Texture2D" uid="uid://bbktasc7u5ktv" path="res://Images/unit.png" id="2_tjfe4"]
 
 [node name="Unit" type="Node2D" groups=["Unit"]]

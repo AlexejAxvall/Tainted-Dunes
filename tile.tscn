@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://4v4r1lff3bm1"]
 
-[ext_resource type="Script" path="res://tile.gd" id="1_ow4pw"]
+[ext_resource type="Script" uid="uid://ctqhe6sen4y45" path="res://tile.gd" id="1_ow4pw"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_nui62"]
 
@@ -21,6 +21,11 @@ z_index = -1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D2"]
 shape = SubResource("CircleShape2D_nui62")
+
+[node name="Label" type="Label" parent="."]
+z_index = 10
+offset_right = 1.0
+offset_bottom = 23.0
 
 [connection signal="area_entered" from="Area2D" to="." method="_on_area_2d_area_entered"]
 [connection signal="area_shape_entered" from="Area2D" to="." method="_on_area_2d_area_shape_entered"]
