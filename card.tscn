@@ -1,92 +1,33 @@
-[gd_scene load_steps=6 format=3 uid="uid://0hx2c1ddh4yb"]
+[gd_scene load_steps=3 format=3 uid="uid://0hx2c1ddh4yb"]
 
 [ext_resource type="Script" uid="uid://d1kxxqxpwcroo" path="res://card.gd" id="1_m371b"]
+[ext_resource type="Texture2D" uid="uid://b5dmun1rojict" path="res://Images/Card_frame.png" id="1_rjlel"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_qj2ge"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_gqefp"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wp4on"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_b8i14"]
-
-[node name="Card" type="Control"]
+[node name="Card" type="TextureRect"]
 z_index = 1
-layout_mode = 3
-anchors_preset = 0
+offset_right = 192.0
+offset_bottom = 256.0
+pivot_offset = Vector2(96, 256)
 script = ExtResource("1_m371b")
+card_texture = ExtResource("1_rjlel")
 
-[node name="TextureRect" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -96.0
-offset_top = -256.0
-offset_right = 96.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="Label" type="Label" parent="TextureRect"]
+[node name="Label" type="Label" parent="."]
 z_index = 1
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -88.0
-offset_top = 8.0
-offset_right = 88.0
-offset_bottom = 48.0
-grow_horizontal = 2
+offset_left = 8.0
+offset_right = 184.0
+offset_bottom = 40.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Button" type="Button" parent="TextureRect"]
+[node name="TextEdit" type="TextEdit" parent="."]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -96.0
-offset_right = 96.0
-offset_bottom = 256.0
-grow_horizontal = 2
-
-[node name="TextEdit" type="TextEdit" parent="TextureRect"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -88.0
-offset_top = 156.0
-offset_right = 88.0
-offset_bottom = 248.0
-grow_horizontal = 2
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -100.0
+offset_right = 184.0
+offset_bottom = -8.0
+grow_vertical = 0
 text = "Hallå"
-
-[node name="Area2D" type="Area2D" parent="."]
-z_index = 10
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
-shape = SubResource("CircleShape2D_qj2ge")
-
-[node name="Left_box" type="Area2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Left_box"]
-shape = SubResource("RectangleShape2D_gqefp")
-
-[node name="Centre_box" type="Area2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Centre_box"]
-shape = SubResource("RectangleShape2D_wp4on")
-
-[node name="Right_box" type="Area2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Right_box"]
-shape = SubResource("RectangleShape2D_b8i14")
-
-[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
-[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
-[connection signal="mouse_entered" from="TextureRect" to="." method="_on_texture_rect_mouse_entered"]
-[connection signal="mouse_exited" from="TextureRect" to="." method="_on_texture_rect_mouse_exited"]

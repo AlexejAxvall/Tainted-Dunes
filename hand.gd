@@ -15,8 +15,10 @@ var hand_position
 
 var a
 
-var card_dimensions
+var card_dimensions: Vector2 = Vector2(192, 256)
 var card_scale
+
+var hovered_card
 
 var card_rotations = []
 var max_card_rotation: float#+- deg
@@ -30,9 +32,8 @@ var offset = 0
 
 var update_count = 0
 
-var is_card_highlighted = false
-
 func _ready():
+	print(card_dimensions)
 	update_variables()
 
 
@@ -43,6 +44,9 @@ func update_variables():
 	a = viewport_size.x * 0.8
 	hand_radius = clamp(hand_radius, a - viewport_size.x / 2 + 800, 10000000)
 	hand_position = Vector2(viewport_size.x / 2, viewport_size.y - card_dimensions.y * card_scale.y + hand_radius)
+	
+	for card in hand_array:
+		card.viewport_size = viewport_size
 	
 	var base
 	var height
@@ -83,7 +87,7 @@ func update_variables():
 		card_rotations_deg.append(-max_card_rotation + angle_step * i)
 		card_rotations.append(deg_to_rad(-max_card_rotation + angle_step * i))
 	for i in range(max_hand_size):
-		card_positions.append(Vector2(hand_radius * cos(deg_to_rad(90 + max_card_rotation - angle_step * i)), -hand_radius * sin(deg_to_rad(90 + max_card_rotation - angle_step * i))))
+		card_positions.append(Vector2(hand_radius * cos(deg_to_rad(90 + max_card_rotation - angle_step * i)) - card_dimensions.x * 0.5, -hand_radius * sin(deg_to_rad(90 + max_card_rotation - angle_step * i)) - card_dimensions.y))
 		#print("angle: " + str(90 + max_card_rotation - angle_step * i))
 	#print()
 	
@@ -102,8 +106,10 @@ func draw_card(deck):
 	if hand_size < max_hand_size and deck.deck_of_cards.size() != 0:
 		var card = deck.draw_card()
 		if card:
+			card.hand = self
 			card.id = hand_size + 1
 			card.is_instantiate = true
+			card.viewport_size = viewport_size
 			card.recieved_z_index = hand_size + 1
 			
 			var card_key = "Card_" + str(hand_size + 1)
@@ -201,3 +207,23 @@ func _notification(what):
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		pass
 		#print("Update count: " + str(update_count))
+
+func _unhandled_input(event):
+	if event is InputEventMouseMotion:
+		var mouse_pos = get_viewport().get_mouse_position()
+		var top_card = null
+
+		# Single pass: find the hovered card with the highest z_index
+		for card in hand_array:
+			if card.get_global_rect().has_point(mouse_pos):
+				print(card)
+				if top_card == null or card.recieved_z_index > top_card.recieved_z_index:
+					top_card = card
+
+		# Fire enter/exit only on real changes
+		if top_card != hovered_card:
+			if hovered_card:
+				hovered_card.exit_highlight()
+			if top_card:
+				top_card.enter_highlight()
+			hovered_card = top_card

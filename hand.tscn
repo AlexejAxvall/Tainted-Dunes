@@ -13,8 +13,6 @@ radius = 32.1403
 [node name="Hand" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
 script = ExtResource("1_sr8c3")
 
 [node name="Area2D" type="Area2D" parent="."]

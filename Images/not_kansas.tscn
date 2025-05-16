@@ -1,0 +1,52 @@
+[gd_scene load_steps=5 format=3 uid="uid://de2k8ugckcvio"]
+
+[ext_resource type="Script" uid="uid://clbmw78cq6hy0" path="res://not_kansas.gd" id="1_tr25p"]
+[ext_resource type="PackedScene" uid="uid://cu2po50sj7b6q" path="res://deck.tscn" id="2_q1a6q"]
+[ext_resource type="PackedScene" uid="uid://0hx2c1ddh4yb" path="res://card.tscn" id="3_3bs8g"]
+[ext_resource type="PackedScene" uid="uid://dhvtwo8vih6ou" path="res://hand.tscn" id="4_ort5o"]
+
+[node name="Not_Kansas" type="Node2D"]
+texture_filter = 1
+script = ExtResource("1_tr25p")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Deck" parent="CanvasLayer" instance=ExtResource("2_q1a6q")]
+
+[node name="Card" parent="CanvasLayer/Deck" instance=ExtResource("3_3bs8g")]
+layout_mode = 0
+offset_left = -887.0
+offset_top = -136.0
+offset_right = -887.0
+offset_bottom = -136.0
+
+[node name="Hand" parent="CanvasLayer" instance=ExtResource("4_ort5o")]
+
+[node name="Draw_button" type="Button" parent="CanvasLayer"]
+offset_right = 8.0
+offset_bottom = 8.0
+text = "Draw"
+
+[node name="End_turn_button" type="Button" parent="CanvasLayer"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -78.0
+offset_bottom = 31.0
+grow_horizontal = 0
+text = "End Turn"
+
+[node name="Line2D" type="Line2D" parent="CanvasLayer"]
+
+[node name="Line2D2" type="Line2D" parent="CanvasLayer"]
+
+[node name="Line2D3" type="Line2D" parent="CanvasLayer"]
+
+[node name="Line2D4" type="Line2D" parent="CanvasLayer"]
+
+[node name="PathLine2D" type="Line2D" parent="."]
+
+[connection signal="pressed" from="CanvasLayer/Draw_button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/End_turn_button" to="." method="_on_end_turn_button_pressed"]

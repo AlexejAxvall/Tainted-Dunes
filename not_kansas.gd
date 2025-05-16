@@ -1,29 +1,26 @@
+# not_kansas.gd (main scene)
 extends Node2D
 
-@onready var tile_scene: PackedScene = preload("res://tile.tscn")
-@onready var unit_scene: PackedScene = preload("res://unit.tscn")
-@onready var camera: Camera2D = $Camera2D
+@onready var tile_scene: PackedScene    = preload("res://tile.tscn")
+@onready var unit_scene: PackedScene    = preload("res://unit.tscn")
+@onready var camera: Camera2D           = $Camera2D
 
-@onready var canvas_layer = $CanvasLayer
-@onready var deck = $CanvasLayer/Deck
-@onready var hand = $CanvasLayer/Hand
-@onready var line_2D = $CanvasLayer/Line2D
-@onready var line_2D2 = $CanvasLayer/Line2D2
-@onready var line_2D3 = $CanvasLayer/Line2D3
-@onready var line_2D4 = $CanvasLayer/Line2D4
+@onready var canvas_layer               = $CanvasLayer
+@onready var deck                       = $CanvasLayer/Deck
+@onready var hand                       = $CanvasLayer/Hand
+@onready var line_2D:   Line2D          = $CanvasLayer/Line2D
+@onready var line_2D2:  Line2D          = $CanvasLayer/Line2D2
+@onready var line_2D3:  Line2D          = $CanvasLayer/Line2D3
+@onready var line_2D4:  Line2D          = $CanvasLayer/Line2D4
+@onready var path_line:  Line2D         = $PathLine2D
 
 var previous_window_size = DisplayServer.window_get_size()
+@export var grid_radius  = 5
 
-func _notification(what):
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
-		print("Window minimized!")
-	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
-		print("Window maximized/restored!")
-
-@export var grid_radius = 5
+var selected_card
 
 var max_sight_range = 5
-var me_modulate = Color(0.5, 0.5, 0.5)
+var me_modulate     = Color(0.5, 0.5, 0.5)
 
 var viewport_visible_rect
 var viewport_size
@@ -33,8 +30,8 @@ var hand_position
 
 var tile_position_initial: Vector2
 var tile_side_length
-var tile_dictionary = {}
-var tile_matrix = []
+var tile_dictionary    = {}
+var tile_matrix        = []
 var tile_radius
 var tile_diameter
 var previously_seen_tiles = []
@@ -42,12 +39,21 @@ var previously_seen_tiles = []
 var selected_node
 var old_selected_node
 
+var unit_node_list = []
+
+# holds the list of k best paths for the current hover
+var k_paths: Array = []
+# which one is currently being shown
+var k_path_index: int = 0
+
+
 var image_dictionary = {}
 var image_scale
 var image_modulate
 
-var unit_clicked = false
-var tile_clicked = false
+var unit_clicked  = false
+var tile_clicked  = false
+var card_clicked  = false
 var click_blocked = false
 
 var middle_row
@@ -56,31 +62,66 @@ var secant_global_position
 
 var view_cone_dictionary = {}
 var direction_to_step_dictionary = {
-	"1" : [1, 0],
-	"2" : [0, 1],
-	"3" : [-1, 1],
-	"4" : [-1, 0],
-	"5" : [-1, -1],
-	"6" : [0, -1],
+	"1": [ 1,  0],
+	"2": [ 0,  1],
+	"3": [-1,  1],
+	"4": [-1,  0],
+	"5": [-1, -1],
+	"6": [ 0, -1],
 }
 
+var which_players_turn = "Player1"
 
+var movement_enabled = false
+var attack_enabled = false
+var gather_resources_enabled = false
+
+var player_resources = {
+	"Player1": {
+		"Money": 0,
+		"Reputation": 0,
+		"Science": 0,
+		"Oil": 0,
+		"Units": 0,
+		"Munitions": {
+			"Light": 0,
+			"Heavy": 0,
+			}
+		}
+	,
+	"Player2": {
+		"Money": 0,
+		"Reputation": 0,
+		"Science": 0,
+		"Oil": 0,
+		"Units": 0,
+		"Munitions": {
+			"Light": 0,
+			"Heavy": 0,
+			}
+	}
+}
 
 func _ready():
 	middle_row = grid_radius
-	
+
 	viewport_visible_rect = get_viewport().get_visible_rect()
-	viewport_size = get_viewport_rect().size
-	
-	secant_global_position = Vector2(viewport_size.x / 2.0, viewport_size.y + hand.hand_radius - 100)
-	
-	camera.position = viewport_visible_rect.size / 2
-	
+	viewport_size         = get_viewport_rect().size
+
+	secant_global_position = Vector2(viewport_size.x/2, viewport_size.y + hand.hand_radius - 100)
+	camera.position        = viewport_visible_rect.size/2
+
 	initialise_image_folder()
 	initialise_grid()
 	initialise_unit()
 	initialise_view_angles()
 	update_hand_position()
+	
+	path_line.z_as_relative = false   # make its z_index absolute
+	path_line.z_index       = 100     # big enough to sit on top
+	path_line.default_color = Color.GREEN
+	
+	PathFinder.init(tile_dictionary)
 
 func _process(delta):
 	var current_window_size = DisplayServer.window_get_size()
@@ -90,67 +131,72 @@ func _process(delta):
 		print("Window resized/maximized: ", current_window_size)
 		hand.update_variables()
 
-func _input(event):
-	if event.is_action_pressed("m"):
-		var mouse_pos = get_viewport().get_mouse_position()
-		print("Mouse Position: ", mouse_pos)
-	
-	if event is InputEventMouseButton:
-		if event.pressed:
-			old_selected_node = selected_node
-			await get_tree().create_timer(0).timeout
-			if not unit_clicked and not tile_clicked:
-				if event.button_index == MOUSE_BUTTON_LEFT:
-					pass
-				elif event.button_index == MOUSE_BUTTON_RIGHT:
-					if selected_node:
-						selected_node.is_selected = false
-						selected_node = null
-			elif unit_clicked:
-				click_blocked = true
-			elif tile_clicked:
-				click_blocked = false
-			unit_clicked = false
-			tile_clicked = false
 
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-			camera.zoom *= Vector2(1.1, 1.1)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-			camera.zoom *= Vector2(0.9, 0.9)
+func _input(event):
+	# ── debug Mouse position
+	if event.is_action_pressed("m"):
+		print("Mouse Position: ", get_viewport().get_mouse_position())
+		return
+
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
 		camera.position -= event.relative / camera.zoom
+		return
+
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			if selected_node and selected_node.is_in_group("Unit"):
+				return
+			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+				camera.zoom *= Vector2(1.1, 1.1)
+			else:
+				camera.zoom *= Vector2(0.9, 0.9)
+			return
+		
+		old_selected_node = selected_node
+		await get_tree().create_timer(0).timeout
+
+		if not unit_clicked and not tile_clicked:
+			if event.button_index == MOUSE_BUTTON_LEFT:
+				pass
+			elif event.button_index == MOUSE_BUTTON_RIGHT and selected_node:
+				selected_node.is_selected = false
+				selected_node = null
+				draw_path([])
+		elif unit_clicked:
+			click_blocked = true
+		elif tile_clicked:
+			click_blocked = false
+
+		unit_clicked = false
+		tile_clicked = false
+		return
+
+		
+
 
 func update_hand_position():
-	var viewport_size = get_viewport_rect().size
-	
-	line_2D.clear_points()
-	line_2D.width = 3
-	line_2D.default_color = Color.RED
-	line_2D.add_point(Vector2(0, viewport_size.y - 100))
-	line_2D.add_point(Vector2(viewport_size.x, viewport_size.y - 100))
-	
-	line_2D2.clear_points()
-	line_2D2.width = 3
-	line_2D2.default_color = Color.RED
-	line_2D2.add_point(Vector2(viewport_size.x * 0.2, -viewport_size.y))
-	line_2D2.add_point(Vector2(viewport_size.x * 0.2, 2 * viewport_size.y))
-		
-	line_2D3.clear_points()
-	line_2D3.width = 3
-	line_2D3.default_color = Color.RED
-	line_2D3.add_point(Vector2(viewport_size.x * 0.8, -viewport_size.y))
-	line_2D3.add_point(Vector2(viewport_size.x * 0.8, 2 * viewport_size.y))
-	
-	line_2D4.clear_points()
-	line_2D4.width = 3
-	line_2D4.default_color = Color.RED
-	line_2D4.add_point(Vector2(0, viewport_size.y))
-	line_2D4.add_point(Vector2(viewport_size.x, viewport_size.y))
-	
-	hand_position = Vector2(viewport_size.x / 2, viewport_size.y + hand.hand_radius)
+	var vs = get_viewport_rect().size
+
+	for l in [line_2D, line_2D2, line_2D3, line_2D4]:
+		l.clear_points()
+		l.width = 3
+		l.default_color = Color.RED
+
+	line_2D.add_point(Vector2(0, vs.y - 100))
+	line_2D.add_point(Vector2(vs.x, vs.y - 100))
+
+	line_2D2.add_point(Vector2(vs.x*0.2, -vs.y))
+	line_2D2.add_point(Vector2(vs.x*0.2, vs.y*2))
+
+	line_2D3.add_point(Vector2(vs.x*0.8, -vs.y))
+	line_2D3.add_point(Vector2(vs.x*0.8, vs.y*2))
+
+	line_2D4.add_point(Vector2(0, vs.y))
+	line_2D4.add_point(Vector2(vs.x, vs.y))
+
+	hand_position = Vector2(vs.x/2, vs.y + hand.hand_radius)
 	hand.hand_position = hand_position
-	hand.position = hand_position
+	hand.position      = hand_position
 
 func initialise_image_folder():
 	var texture_folder_path = "res://Images/"
@@ -200,9 +246,7 @@ func initialise_grid():
 			var image
 			var in_sight = false
 			var height
-			var passable_ground = false
-			var passable_water = false
-			var passable_air = false
+			var passable = {}
 			var movement_cost
 			var range_bonus
 			var defence_bonus
@@ -211,18 +255,22 @@ func initialise_grid():
 				image = image_dictionary[type]
 				image_modulate = Color(1, 0.5, 0)
 				image_scale = Vector2(2 * tile_radius / 360, 2 * tile_radius / 360)
+				passable = {
+					"Ground": true,
+					"Water": false,
+					"Air": true,
+				}
 				height = 0
-				passable_ground = true
-				passable_water = false
-				passable_air = true
 				movement_cost = 1
 				range_bonus = 0
 				defence_bonus = 0
 			elif type == "ruin":
+				passable = {
+					"Ground": true,
+					"Water": false,
+					"Air": true,
+				}
 				height = 0
-				passable_ground = true
-				passable_water = false
-				passable_air = true
 				movement_cost = 2
 				range_bonus = 0
 				defence_bonus = 1
@@ -230,17 +278,16 @@ func initialise_grid():
 				image = image_dictionary[type]
 				image_modulate = Color(0.5, 0.5, 0.5)
 				image_scale = Vector2(2 * tile_radius / 360, 2 * tile_radius / 360)
-				passable_ground = false
-				passable_water = false
-				passable_air = true
+				passable = {
+					"Ground": false,
+					"Water": false,
+					"Air": true,
+				}
 				height = 1
 				movement_cost = 3
 				range_bonus = 2
 				defence_bonus = 2
 			elif type == "water":
-				passable_ground = false
-				passable_water = true
-				passable_air = true
 				height = null
 				movement_cost = null
 				range_bonus = null
@@ -268,17 +315,17 @@ func initialise_grid():
 				"In_sight": false,
 				"Been_seen": false,
 				"Height": height,
-				"Passable" : {"Ground": false, "Water": false, "Air": false},
+				"Passable" : passable,
 				"Movement_cost": movement_cost,
 				"Range_bonus": range_bonus,
 				"Defence_bonus": defence_bonus,
 				"Hide": false,
-				"Neighbour_1": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null, "Available": false, "Movement_cost": null, "See_through": false, "Passable": {"Ground": false, "Water": false, "Air": false}, "Wall": false},
-				"Neighbour_2": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null, "Available": false, "Movement_cost": null, "See_through": false, "Passable": {"Ground": false, "Water": false, "Air": false}, "Wall": false},
-				"Neighbour_3": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null, "Available": false, "Movement_cost": null, "See_through": false, "Passable": {"Ground": false, "Water": false, "Air": false}, "Wall": false},
-				"Neighbour_4": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null, "Available": false, "Movement_cost": null, "See_through": false, "Passable": {"Ground": false, "Water": false, "Air": false}, "Wall": false},
-				"Neighbour_5": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null, "Available": false, "Movement_cost": null, "See_through": false, "Passable": {"Ground": false, "Water": false, "Air": false}, "Wall": false},
-				"Neighbour_6": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null, "Available": false, "Movement_cost": null, "See_through": false, "Passable": {"Ground": false, "Water": false, "Air": false}, "Wall": false},
+				"Neighbour_1": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null,"Passable": null, "Occupied": false, "Wall": false, "Movement_cost": null},
+				"Neighbour_2": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null,"Passable": null, "Occupied": false, "Wall": false, "Movement_cost": null},
+				"Neighbour_3": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null,"Passable": null, "Occupied": false, "Wall": false, "Movement_cost": null},
+				"Neighbour_4": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null,"Passable": null, "Occupied": false, "Wall": false, "Movement_cost": null},
+				"Neighbour_5": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null,"Passable": null, "Occupied": false, "Wall": false, "Movement_cost": null},
+				"Neighbour_6": {"Node": null, "ID": null, "Tile_key" : null, "Coordinates": null,"Passable": null, "Occupied": false, "Wall": false, "Movement_cost": null},
 			}
 			
 			if not in_sight:
@@ -353,8 +400,12 @@ func get_tile_key_at(row: int, col: int):
 func initialise_unit():
 	var unit = unit_scene.instantiate()
 	unit.parent = self
+	unit.stats_dictionary["Movement_type"] = "Ground"
+	unit.stats_dictionary["Movement_points_base"] = 3
+	unit.stats_dictionary["Movement_points"] = 3
+	unit_node_list.append(unit)
 	add_child(unit)
-	unit.position = viewport_visible_rect.size / 2
+	unit.position = viewport_visible_rect.size/2
 	unit.update_image(tile_radius)
 
 func _on_button_pressed():
@@ -381,7 +432,7 @@ func initialise_view_angles():
 		var checked_tile_position = Vector2(tile_diameter * layer - tile_radius, 1.5 * tile_side_length)
 		view_cone_dictionary["Layer_" + str(layer)]["0.0_degrees"] = [6, 2]
 		view_cone_dictionary["Layer_" + str(layer)]["-180.0_degrees"] = [3, 5]
-		print()
+		#print()
 		
 		switch_cooldown -= 1
 		for i in range(layer * 3 - 1):
@@ -597,7 +648,7 @@ func update_fog(current_tile_key, previous_tile_key, unit_node):
 		elif unit_node_coordinates.y + row - sight_range > tile_matrix.size() - 1:
 			pass
 			#print("Relative row " + str(-sight_range + row) + " doesnt exist")
-	print()
+	#print()
 	#print("Seen matrix og: " + str(seen_tiles_matrix))
 	
 	var matrix_of_layers_of_tiles_keys = []
@@ -664,8 +715,8 @@ func update_fog(current_tile_key, previous_tile_key, unit_node):
 					matrix_of_layers_of_tiles_keys[layer - 1].append(checked_tile_key)
 					
 					if checked_tile["Type"] == "mountain":
-						print()
-						print(checked_tile_key, checked_tile["Index"], " is a mountain!", )
+						#print()
+						#print(checked_tile_key, checked_tile["Index"], " is a mountain!", )
 						var angle_from_unit = - round(rad_to_deg((checked_tile["Position"] - unit_tile["Position"]).angle()) * 10) / 10.0
 						var layer_range = sight_range - layer
 						var interval = view_cone_dictionary["Layer_" + str(layer)][str(angle_from_unit) + "_degrees"]
@@ -740,7 +791,6 @@ func update_fog(current_tile_key, previous_tile_key, unit_node):
 			node.update_image(1, tile["Image"], tile["Image_scale"], me_modulate)
 	
 	if previously_seen_tiles.size() != 0:
-		print("Yahoo")
 		for i in range(previously_seen_tiles.size()):
 			var calculated_tile = tile_dictionary[previously_seen_tiles[i]]
 			calculated_tile["In_sight"] = false
@@ -770,33 +820,40 @@ func iterate_around_tile(centre_tile_key, layers, interval):
 
 	
 	for layer in range(layers):
-		print("Layer ", layer + 1, ":")
+		#print("Layer ", layer + 1, ":")
 		var step = direction_to_step_dictionary[str(index_start)]
 	
 		var calibrator1 = 0
 		if initial_tile_index.y == tile_matrix_centre.y:
 			if step[1] < 0:
-				print("	Above meridian")
+				pass
+				#print("	Above meridian")
 			elif step[1] == 0:
-				print("	On meridian")
+				pass
+				#print("	On meridian")
 			elif step[1] > 0:
-				print("	Below meridian")
+				pass
+				#print("	Below meridian")
 			calibrator1 = 0
 		elif initial_tile_index.y < tile_matrix_centre.y:
 			if step[1] > 0:
 				if initial_tile_index.y + step[1] == tile_matrix_centre.y:
-					print("	On meridian")
+					pass
+					#print("	On meridian")
 				else:
-					print("	Above meridian")
+					pass
+					#print("	Above meridian")
 				calibrator1 = 1
 			else:
 				calibrator1 = 0
 		elif initial_tile_index.y > tile_matrix_centre.y:
 			if step[1] < 0:
 				if initial_tile_index.y + step[1] == tile_matrix_centre.y:
-					print("	On meridian")
+					pass
+					#print("	On meridian")
 				else:
-					print("	Below meridian")
+					pass
+					#print("	Below meridian")
 				calibrator1 = 1
 			else:
 				calibrator1 = 0
@@ -814,9 +871,10 @@ func iterate_around_tile(centre_tile_key, layers, interval):
 			if tile_dictionary.has(tile_matrix[initial_tile_index.y][initial_tile_index.x]):
 				var initial_tile = tile_dictionary[tile_matrix[initial_tile_index.y][initial_tile_index.x]]
 				shadow_list.append(initial_tile["Tile_key"])
-				print("	Step: ", index_revolving, step, ", Calibrator: ", calibrator1, ", Tile key: ", initial_tile["Tile_key"])
+				#print("	Step: ", index_revolving, step, ", Calibrator: ", calibrator1, ", Tile key: ", initial_tile["Tile_key"])
 		else:
-			print("	Step: ", index_revolving, step, ", Calibrator: ", calibrator1)
+			pass
+			#print("	Step: ", index_revolving, step, ", Calibrator: ", calibrator1)
 		
 		var initial_tile_index_2 = initial_tile_index
 		for n in range(scale_constant + scale_constant * layer):
@@ -838,34 +896,41 @@ func iterate_around_tile(centre_tile_key, layers, interval):
 					switch_cooldown = side_length
 					index_revolving = (index_revolving % 6 + offset_index) % 7
 					index_revolving = clamp(index_revolving, 1, 6)
-					print("	Switch!")
+					#print("	Switch!")
 			
 			step = direction_to_step_dictionary[str(index_revolving)]
 			
 			var calibrator2 = 0
 			if initial_tile_index_2.y == tile_matrix_centre.y:
 				if step[1] < 0:
-					print("	Above meridian")
+					pass
+					#print("	Above meridian")
 				elif step[1] == 0:
-					print("	On meridian")
+					pass
+					#print("	On meridian")
 				elif step[1] > 0:
-					print("	Below meridian")
+					pass
+					#print("	Below meridian")
 				calibrator2 = 0
 			elif initial_tile_index_2.y < tile_matrix_centre.y:
 				if step[1] > 0:
 					if initial_tile_index_2.y + step[1] == tile_matrix_centre.y:
-						print("	On meridian")
+						pass
+						#print("	On meridian")
 					else:
-						print("	Above meridian")
+						pass
+						#print("	Above meridian")
 					calibrator2 = 1
 				else:
 					calibrator2 = 0
 			elif initial_tile_index_2.y > tile_matrix_centre.y:
 				if step[1] < 0:
 					if initial_tile_index_2.y + step[1] == tile_matrix_centre.y:
-						print("	On meridian")
+						pass
+						#print("	On meridian")
 					else:
-						print("Below meridian")
+						pass
+						#print("Below meridian")
 					calibrator2 = 1
 				else:
 					calibrator2 = 0
@@ -877,9 +942,28 @@ func iterate_around_tile(centre_tile_key, layers, interval):
 				if tile_dictionary.has(tile_matrix[initial_tile_index_2.y][initial_tile_index_2.x]):
 					var initial_tile_2 = tile_dictionary[tile_matrix[initial_tile_index_2.y][initial_tile_index_2.x]]
 					shadow_list.append(initial_tile_2["Tile_key"])
-					print("	Step: ", index_revolving, step, ", Calibrator: ", calibrator1, ", Tile key: ", initial_tile_2["Tile_key"])
+					#print("	Step: ", index_revolving, step, ", Calibrator: ", calibrator1, ", Tile key: ", initial_tile_2["Tile_key"])
 			else:
-				print("	Step: ", index_revolving, step, ", Calibrator: ", calibrator1)
-		print()
+				pass
+				#print("	Step: ", index_revolving, step, ", Calibrator: ", calibrator1)
+		#print()
 	
 	return shadow_list
+
+# Call this whenever you have a new path (array of tile_key strings)
+func draw_path(path: Array) -> void:
+	path_line.clear_points()
+	path_line.width = 4
+	for tile_key in path:
+		# each tile stores its world position in tile_dictionary
+		var pos: Vector2 = tile_dictionary[tile_key]["Position"]
+		path_line.add_point(pos)
+
+func _on_end_turn_button_pressed() -> void:
+	for unit in unit_node_list:
+		unit.stats_dictionary["Movement_points"] = unit.stats_dictionary["Movement_points_base"]
+
+
+func gather_resources(player, amount):
+	player_resources[player]["Munitions"]["Light"] += amount
+	player_resources[player]["Munitions"]["Heavy"] += amount
