@@ -2,6 +2,7 @@
 
 extends Control
 
+@onready var main_scene = get_parent().get_parent()
 @onready var deck = get_parent().get_node("Deck")
 @onready var pointer_1 = $Pointer_1 #Area2D
 @onready var pointer_2 = $Pointer_2 #Area2D
@@ -125,16 +126,22 @@ func draw_card(deck):
 
 func remove_card(card):
 	var index_of_removed = hand_array.find(card)
-	for i in range(hand_array.size() - 1 - index_of_removed):
+	for i in range(1, hand_array.size() - 1 - index_of_removed + 1):
 		var card_index = index_of_removed + 1 + i
-		hand_dictionary["Card_" + str(card_index)]["ID"] -= 1
-		hand_dictionary["Card_" + str(card_index)]["Node"].recieved_z_index -= 1
-		hand_dictionary["Card_" + str(card_index)]["Z_index"] -= 1
-
+		if hand_dictionary["Card_" + str(card_index)]["Node"]:
+			hand_dictionary["Card_" + str(card_index)]["ID"] -= 1
+			hand_dictionary["Card_" + str(card_index)]["Node"].recieved_z_index -= 1
+			hand_dictionary["Card_" + str(card_index)]["Z_index"] -= 1
+	
+	print("Hand_array: ", hand_array)
 	hand_array.erase(card)
+	print("Hand_array: ", hand_array)
+	card.queue_free()
 	hand_size = hand_array.size()
-	arrange_cards()
-
+	if hand_size == 0 and deck.deck_of_cards.is_empty():
+		deck.reshuffle_discard()
+	elif hand_size != 0:
+		arrange_cards()
 
 func arrange_cards():
 	#print("From arrange_cards")
@@ -208,22 +215,75 @@ func _notification(what):
 		pass
 		#print("Update count: " + str(update_count))
 
+
+
+var top_card = null
+var is_card_dragged = false
 func _unhandled_input(event):
 	if event is InputEventMouseMotion:
-		var mouse_pos = get_viewport().get_mouse_position()
-		var top_card = null
+		find_top_card()
 
-		# Single pass: find the hovered card with the highest z_index
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.is_action_pressed("Drag_card"):
+			if !is_card_dragged and find_top_card():
+				if top_card.playable:
+					is_card_dragged = true
+					top_card.rotation = 0
+					print("Clicked card: ", hand_array.find(top_card) + 1)
+		elif event.is_action_released("Drag_card"):
+			if is_card_dragged:
+				is_card_dragged = false
+				if top_card:
+					if top_card.global_position.y < viewport_size.y * 0.3:
+						print("viewport_size.y * 0.5: ", viewport_size.y * 0.3)
+						print("top_card.global_position.y: ", top_card.global_position.y)
+						play_card(top_card)
+					else:
+						print("viewport_size.y * 0.5: ", viewport_size.y * 0.3)
+						print("top_card.global_position.y: ", top_card.global_position.y)
+						
+					top_card.exit_highlight()
+					top_card = null
+
+func find_top_card():
+	if !is_card_dragged:
+		var mouse_pos = get_viewport().get_mouse_position()
+		top_card = null
+		
 		for card in hand_array:
 			if card.get_global_rect().has_point(mouse_pos):
-				print(card)
 				if top_card == null or card.recieved_z_index > top_card.recieved_z_index:
 					top_card = card
-
-		# Fire enter/exit only on real changes
+		
 		if top_card != hovered_card:
-			if hovered_card:
+			if hovered_card and !is_card_dragged:
 				hovered_card.exit_highlight()
-			if top_card:
+			if top_card and !is_card_dragged:
 				top_card.enter_highlight()
 			hovered_card = top_card
+		
+		return top_card
+
+func _process(delta: float) -> void:
+	if is_card_dragged:
+		if top_card:
+			top_card.global_position = get_global_mouse_position() - card_dimensions * card_scale * 0.5
+
+func play_card(card):
+	var card_dictionary = card.card_dictionary
+	var card_owner = card.card_owner
+	print("Played: ", card_dictionary["Name"])
+	for effect in card_dictionary["Effects"]:
+		if card_dictionary["Category"] == "Movement":
+			if effect == "Enable_movement":
+				main_scene.movement_enabled = true
+		elif card_dictionary["Category"] == "Attack":
+			if effect == "Enable_attack":
+				main_scene.attack_enabled = true
+		elif card_dictionary["Category"] == "Resources":
+			if effect == "Gather_resources":
+				main_scene.gather_resources_enabled = true
+				main_scene.gather_resources(card_owner, card_dictionary["Effects"]["Gather_resources"]["Resources_gathered"])
+	remove_card(card)
+		

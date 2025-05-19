@@ -39,7 +39,6 @@ func find_path(start_key: String, end_key: String, unit_node) -> Array:
 		open_set.erase(current)
 		closed_set[current] = true
 
-		# check all 6 neighbours
 		for i in range(1, 7):
 			var nd = tile_dictionary[current]["Neighbour_%d" % i]
 			var nk = nd.get("Tile_key")

@@ -12,6 +12,8 @@ var main_scene
 
 var hand
 
+var playable = true
+
 var id
 var card_owner
 var recieved_z_index
@@ -52,7 +54,7 @@ func enter_highlight():
 	z_index    = 100
 	scale      = Vector2(1.2, 1.2)
 	rotation  = 0
-	global_position.y = viewport_size.y - 400
+	global_position.y = viewport_size.y - card_dimensions.y * scale.y
 	print(global_position)
 
 func exit_highlight():
@@ -60,23 +62,6 @@ func exit_highlight():
 	scale     = Vector2(1, 1)
 	position  = recieved_position
 	rotation  = recieved_rotation
-
-func play_card():
-	# Your card‐play logic
-	print("Played: ", card_dictionary["Name"])
-	for effect in card_dictionary["Effects"]:
-		if card_dictionary["Category"] == "Movement":
-			if effect == "Enable_movement":
-				main_scene.movement_enabled = true
-		elif card_dictionary["Category"] == "Attack":
-			if effect == "Enable_attack":
-				main_scene.attack_enabled = true
-		elif card_dictionary["Category"] == "Resources":
-			if effect == "Gather_resources":
-				main_scene.gather_resources_enabled = true
-				main_scene.gather_resources(card_owner, card_dictionary["Effects"]["Resources_gathered"])
-	get_parent().remove_card(self)
-	queue_free()
 
 func update_mouse_filter(nodes):
 	for n in nodes:
