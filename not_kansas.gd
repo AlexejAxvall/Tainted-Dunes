@@ -794,6 +794,7 @@ func update_fog(current_tile_key, previous_tile_key, unit_node):
 		for i in range(previously_seen_tiles.size()):
 			var calculated_tile = tile_dictionary[previously_seen_tiles[i]]
 			calculated_tile["In_sight"] = false
+			calculated_tile["Node"].in_sight = false
 			var node = calculated_tile["Node"]
 			node.update_image(1, calculated_tile["Image"], image_scale, me_modulate)
 		
@@ -801,6 +802,7 @@ func update_fog(current_tile_key, previous_tile_key, unit_node):
 	for i in range(seen_tiles.size()):
 		var calculated_tile = tile_dictionary[seen_tiles[i]]
 		calculated_tile["In_sight"] = true
+		calculated_tile["Node"].in_sight = true
 		calculated_tile["Been_seen"] = true
 		var node = calculated_tile["Node"]
 		node.update_image(1, calculated_tile["Image"], image_scale, null)

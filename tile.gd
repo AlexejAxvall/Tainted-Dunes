@@ -23,6 +23,7 @@ var tile_key
 var contains_unit: bool = false
 var is_selected:   bool = false
 var image
+var in_sight = false
 
 
 func _ready():
@@ -63,7 +64,7 @@ func calculate_hexagon(side_length: float) -> PackedVector2Array:
 func _on_mouse_entered():
 	#print("▶ _on_mouse_entered on ", tile_key, " — selected_node is: ", parent.selected_node)
 	var sel = parent.selected_node
-	if sel and sel.is_in_group("Unit"):
+	if sel and sel.is_in_group("Unit") and in_sight:
 		var path = pathfinder.find_path(sel.current_tile_key, tile_key, sel)
 		#print("   → computed path: ", path)
 		_draw_preview(path)

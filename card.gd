@@ -24,6 +24,7 @@ var viewport_size
 
 var card_dictionary = {
 	"Name":    "",
+	"Text": "",
 	"Cost":    null,
 	"Type":    null,
 	"ID":      null,
@@ -49,7 +50,9 @@ func _ready():
 
 	label.size = Vector2(size.x * 0.92, size.y * 0.16)
 	label.text = card_dictionary["Name"]
-
+	
+	text_edit.text = card_dictionary["Text"]
+	
 func enter_highlight():
 	z_index    = 100
 	scale      = Vector2(1.2, 1.2)

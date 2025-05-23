@@ -29,6 +29,7 @@ func create_deck():
 		card.card_owner = main_scene.which_players_turn
 		card.size = card_dimensions
 		card.card_dictionary["Name"] = "Movement"
+		card.card_dictionary["Text"] = "Move a unit"
 		card.card_dictionary["Category"] = "Movement"
 		card.card_dictionary["Effects"] = {
 			"Enable_movement": {"Movements_enabled": 1}
@@ -40,6 +41,7 @@ func create_deck():
 		card.card_owner = main_scene.which_players_turn
 		card.size = card_dimensions
 		card.card_dictionary["Name"] = "Attack"
+		card.card_dictionary["Text"] = "Attack a tile"
 		card.card_dictionary["Category"] = "Attack"
 		card.card_dictionary["Effects"] = {
 			"Enable_attack": {"Attacks_enabled": 1}
@@ -51,6 +53,7 @@ func create_deck():
 		card.card_owner = main_scene.which_players_turn
 		card.size = card_dimensions
 		card.card_dictionary["Name"] = "Resources"
+		card.card_dictionary["Text"] = "Gather resources"
 		card.card_dictionary["Category"] = "Resources"
 		card.card_dictionary["Effects"] = {
 			"Gather_resources": {"Resources_gathered": 1}
